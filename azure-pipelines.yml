@@ -1,7 +1,7 @@
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/build/triggers
 # https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
 
-trigger: none
+# trigger: none
 pr:
   autoCancel: true
   branches:
@@ -31,7 +31,7 @@ steps:
 - task: AzureFileCopy@3
   inputs:
     SourcePath: '$(System.DefaultWorkingDirectory)/dist'
-    azureSubscription: 'My Connection'
+    azureSubscription: 'DevOpsServiceConnection'
     Destination: 'AzureBlob'
     storage: 'stkubcapstone'
     ContainerName: '$web'
