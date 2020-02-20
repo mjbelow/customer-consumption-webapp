@@ -5,5 +5,5 @@ export default Model.extend({
   title: attr('string'),
   body: attr('string'),
   publishedAt: attr('date'),
-  comments: hasMany()
+  comments: hasMany('comment', {inverse: 'post', async: true})
 });

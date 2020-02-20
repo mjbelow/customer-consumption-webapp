@@ -1,4 +1,4 @@
-import { Factory } from 'ember-cli-mirage';
+import { Factory, association } from 'ember-cli-mirage';
 
 export default Factory.extend({
 
@@ -8,6 +8,8 @@ export default Factory.extend({
 
   publishedAt(i) {
     return `9/${i}/2020`;
-  }
+  },
+
+  post:association()
 
 });
