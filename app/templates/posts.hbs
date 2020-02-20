@@ -1,1 +1,11 @@
-{{outlet}}
+<h1>Posts</h1>
+
+<ul>
+  {{#each model as |post|}}
+    <li>
+      {{!-- {{post.title}} --}}
+      <LinkTo @route="post" @model={{post.id}}>{{post.title}}</LinkTo>
+      {{!-- {{#link-to 'post'}}test{{/link-to}} --}}
+    </li>
+  {{/each}}
+</ul>
