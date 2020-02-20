@@ -7,5 +7,13 @@
       <LinkTo @route="post" @model={{post.id}}>{{post.title}}</LinkTo>
       {{!-- {{#link-to 'post'}}test{{/link-to}} --}}
     </li>
+    <ul>
+      {{#each post.comments as |comment|}}
+        <li>
+          {{comment.text}}<br>
+          <small> commented on {{comment.publishedAt}}</small>
+        </li>
+      {{/each}}
+    </ul>
   {{/each}}
 </ul>
