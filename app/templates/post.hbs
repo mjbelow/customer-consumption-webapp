@@ -5,3 +5,14 @@
 </p>
 
 <code>{{model.body}}</code>
+
+<h4>Comments</h4>
+
+<ul>
+  {{#each model.comments as |comment|}}
+    <li>
+      {{comment.text}}<br>
+      <small> commented on {{comment.publishedAt}}</small>
+    </li>
+  {{/each}}
+</ul>

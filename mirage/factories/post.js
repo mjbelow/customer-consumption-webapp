@@ -11,5 +11,9 @@ export default Factory.extend({
 
   publishedAt(i) {
     return `8/${i}/2020`;
+  },
+
+  afterCreate(post, server) {
+    server.createList('comment', 3, { post });
   }
 });
