@@ -3,5 +3,5 @@ const { Model, attr, belongsTo } = DS;
 
 export default Model.extend({
   title: attr('string'),
-  author: belongsTo('author')
+  author: belongsTo('author', {async: false})
 });
