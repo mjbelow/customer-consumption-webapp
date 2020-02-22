@@ -1,1 +1,7 @@
-{{outlet}}
+{{#each model as |author|}}
+
+  <ul>
+    <li>{{author.name}}</li>
+  </ul>
+
+{{/each}}

@@ -63,4 +63,6 @@ export default function() {
   this.get('/posts/:id');
   this.get('/comments');
   this.get('/comments/:id');
+
+  this.get('/authors')
 }
