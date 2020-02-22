@@ -56,6 +56,11 @@ export default function() {
   //       ]
   //     }
   // });
-  this.get('/posts')
+  // this.get('/posts', (schema, request) => {
+  //   return schema.posts.all();
+  // })
+  this.get('/posts');
   this.get('/posts/:id');
+  this.get('/comments');
+  this.get('/comments/:id');
 }
