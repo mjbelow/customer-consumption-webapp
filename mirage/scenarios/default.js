@@ -6,5 +6,18 @@ export default function(server) {
   */
 
   server.createList('post', 10);
-  server.createList('author', 5);
+  // server.createList('author', 5);
+  server.create('author', {
+    name: "Matthew",
+    books: [
+      server.create('book', {title: "Book Title"}),
+      server.create('book', {title: "Another Book Title"})
+    ]
+  })
+  server.create('author', {
+    name: "James",
+    books: [
+      server.create('book', {title: "New Book"})
+    ]
+  })
 }
