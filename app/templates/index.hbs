@@ -2,6 +2,11 @@
 
   <ul>
     <li>{{author.name}}</li>
+    <ul>
+      {{#each author.books as |book|}}
+        <li>{{book.title}}</li>
+      {{/each}}
+    </ul>
   </ul>
 
 {{/each}}
