@@ -3,5 +3,5 @@ const { Model, attr, hasMany } = DS;
 
 export default Model.extend({
   name: attr('string'),
-  books: hasMany('book', {async: false})
+  books: hasMany('book', {async: true})
 });

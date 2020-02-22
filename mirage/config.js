@@ -65,4 +65,5 @@ export default function() {
   this.get('/comments/:id');
 
   this.get('/authors')
+  this.get('/books/:id')
 }
