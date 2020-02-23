@@ -4,6 +4,6 @@ const { Model, attr, hasMany, belongsTo } = DS;
 export default Model.extend({
   name: attr('string'),
   books: hasMany('book', {async: true}),
-  "best-sellers": hasMany(),
+  bestSellers: hasMany(),
   publisher: belongsTo()
 });
