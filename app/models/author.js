@@ -1,7 +1,9 @@
 import DS from 'ember-data';
-const { Model, attr, hasMany } = DS;
+const { Model, attr, hasMany, belongsTo } = DS;
 
 export default Model.extend({
   name: attr('string'),
-  books: hasMany('book', {async: true})
+  books: hasMany('book', {async: true}),
+  "best-sellers": hasMany(),
+  publisher: belongsTo()
 });

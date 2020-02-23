@@ -66,4 +66,6 @@ export default function() {
 
   this.get('/authors')
   this.get('/books/:id')
+  this.get('/best-sellers/:id')
+  this.get('/publishers/:id')
 }
