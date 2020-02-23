@@ -3,6 +3,6 @@ const { Model, attr, belongsTo } = DS;
 
 export default Model.extend({
   title: attr(),
-  "best-seller-date": attr('date'),
+  bestSellerDate: attr('date'),
   author: belongsTo()
 });

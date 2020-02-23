@@ -22,7 +22,7 @@ export default function(server) {
     books: books[0],
     bestSellers: [
       // for server.create(): bestSeller, best-sellar, best-Sellar (all work)
-      server.create('best-seller', {title: "My Best Seller Book", "best-seller-date": "1/2/2020"}),
+      server.create('best-seller', {title: "My Best Seller Book", bestSellerDate: "1/2/2020"}),
       server.create('best-seller', {title: "Another Best Seller", "best-seller-date": "5/7/2020"})
     ],
     publisher: bestPublisher
