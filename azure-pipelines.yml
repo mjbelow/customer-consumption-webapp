@@ -1,7 +1,10 @@
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/build/triggers
 # https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/build/ci-build-git?view=azure-devops&tabs=yaml#exclude-or-include-tasks-for-builds-based-on-the-branch-being-built
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/integrations/slack?view=azure-devops
 
-# trigger: none
+trigger:
+- master
 pr:
   autoCancel: true
   branches:
@@ -29,6 +32,7 @@ steps:
 - script: dir
 
 - task: AzureFileCopy@3
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   inputs:
     SourcePath: '$(System.DefaultWorkingDirectory)/dist'
     azureSubscription: 'DevOpsServiceConnection'
