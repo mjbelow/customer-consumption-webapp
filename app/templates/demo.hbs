@@ -1,0 +1,172 @@
+<style>
+  ul {
+    margin: 20px;
+    border: 1px solid #000;
+    list-style-position: inside;
+    padding: 20px;
+    background: hsl(220, 50%, 60%);
+  }
+
+  ul ul {
+    background: hsl(220,50%, 80%)
+  }
+</style>
+
+<h1>customers ({{model.customers.length}})</h1>
+
+{{#each model.customers as |customer|}}
+
+  <ul>
+
+    <li><b>id</b>: {{customer.id}}</li>
+    <li><b>name</b>: {{customer.name}}</li>
+    
+    <h2>customerLocations ({{customer.customerLocations.length}})</h2>
+    {{#each customer.customerLocations as |customerLocation|}}
+      <ul>
+        <li><b>customerId</b>: {{customerLocation.customer.id}}</li>
+        <li><b>accountLocationKey</b>: {{customerLocation.accountLocationKey}}</li>
+        <li><b>serviceStart</b>: {{customerLocation.serviceStart}}</li>
+        <li><b>serviceEnd</b>: {{customerLocation.serviceEnd}}</li>
+      </ul>
+    {{/each}}
+
+  </ul>
+
+{{/each}}
+
+<hr>
+
+<h1>locations ({{model.locations.length}})</h1>
+
+{{#each model.locations as |location|}}
+
+  <ul>
+
+    <li><b>id</b>: {{location.id}}</li>
+    <li><b>locationClass</b>: {{location.locationClass}}</li>
+    <li><b>address</b>: {{location.address}}</li>
+    <li><b>city</b>: {{location.city}}</li>
+    <li><b>state</b>: {{location.state}}</li>
+    <li><b>postalCode</b>: {{location.postalCode}}</li>
+
+    <h2>customerLocations ({{location.customerLocations.length}})</h2>
+    {{#each location.customerLocations as |customerLocation|}}
+      <ul>
+        <li><b>accountLocationKey</b>: {{customerLocation.accountLocationKey}}</li>
+        <li><b>serviceStart</b>: {{customerLocation.serviceStart}}</li>
+        <li><b>serviceEnd</b>: {{customerLocation.serviceEnd}}</li>
+      </ul>
+    {{/each}}
+
+    <h2>meterLocations ({{location.meterLocations.length}})</h2>
+    {{#each location.meterLocations as |meterLocation|}}
+      <ul>
+        <li><b>activeDate</b>: {{meterLocation.activeDate}}</li>
+        <li><b>inactiveDate</b>: {{meterLocation.inactiveDate}}</li>
+      </ul>
+    {{/each}}
+
+  </ul>
+
+{{/each}}
+
+<hr>
+
+<h1>meters ({{model.meters.length}})</h1>
+
+{{#each model.meters as |meter|}}
+
+  <ul>
+
+    <li><b>id</b>: {{meter.id}}</li>
+    <li><b>meterType</b>: {{meter.meterType}}</li>
+    <li><b>serviceType</b>: {{meter.serviceType}}</li>
+    <li><b>region</b>: {{meter.region}}</li>
+    <li><b>intervalLength</b>: {{meter.intervalLength}}</li>
+    <li><b>channel1RawUom</b>: {{meter.channel1RawUom}}</li>
+    <li><b>channel2RawUom</b>: {{meter.channel2RawUom}}</li>
+    <li><b>channel3RawUom</b>: {{meter.channel3RawUom}}</li>
+    <li><b>channel4RawUom</b>: {{meter.channel4RawUom}}</li>
+    <li><b>channel5RawUom</b>: {{meter.channel5RawUom}}</li>
+    <li><b>channel6RawUom</b>: {{meter.channel6RawUom}}</li>
+    <li><b>channel7RawUom</b>: {{meter.channel7RawUom}}</li>
+    <li><b>channel8RawUom</b>: {{meter.channel8RawUom}}</li>
+    <li><b>channel1Multiplier</b>: {{meter.channel1Multiplier}}</li>
+    <li><b>channel2Multiplier</b>: {{meter.channel2Multiplier}}</li>
+    <li><b>channel3Multiplier</b>: {{meter.channel3Multiplier}}</li>
+    <li><b>channel4Multiplier</b>: {{meter.channel4Multiplier}}</li>
+    <li><b>channel5Multiplier</b>: {{meter.channel5Multiplier}}</li>
+    <li><b>channel6Multiplier</b>: {{meter.channel6Multiplier}}</li>
+    <li><b>channel7Multiplier</b>: {{meter.channel7Multiplier}}</li>
+    <li><b>channel8Multiplier</b>: {{meter.channel8Multiplier}}</li>
+    <li><b>channel1FinalUom</b>: {{meter.channel1FinalUom}}</li>
+    <li><b>channel2FinalUom</b>: {{meter.channel2FinalUom}}</li>
+    <li><b>channel3FinalUom</b>: {{meter.channel3FinalUom}}</li>
+    <li><b>channel4FinalUom</b>: {{meter.channel4FinalUom}}</li>
+    <li><b>channel5FinalUom</b>: {{meter.channel5FinalUom}}</li>
+    <li><b>channel6FinalUom</b>: {{meter.channel6FinalUom}}</li>
+    <li><b>channel7FinalUom</b>: {{meter.channel7FinalUom}}</li>
+    <li><b>channel8FinalUom</b>: {{meter.channel8FinalUom}}</li>
+    <li><b>meterCycle</b>: {{meter.meterCycle}}</li>
+
+    <h2>meterLocations ({{meter.meterLocations.length}})</h2>
+    {{#each meter.meterLocations as |meterLocation|}}
+      <ul>
+        <li><b>activeDate</b>: {{meterLocation.activeDate}}</li>
+        <li><b>inactiveDate</b>: {{meterLocation.inactiveDate}}</li>
+      </ul>
+    {{/each}}
+
+    <h2>meterIntervals ({{meter.meterIntervals.length}})</h2>
+    {{#each meter.meterIntervals as |meterInterval|}}
+      <ul>
+        <li><b>id</b>: {{meterInterval.id}}</li>
+        <li><b>meterId</b>: {{meter.id}}</li>
+        <li><b>channelId</b>: {{meterInterval.channelId}}</li>
+        <li><b>readDate</b>: {{meterInterval.readDate}}</li>
+        <li><b>readHour</b>: {{meterInterval.readHour}}</li>
+        <li><b>read30Min</b>: {{meterInterval.read30Min}}</li>
+        <li><b>read15Min</b>: {{meterInterval.read15Min}}</li>
+        <li><b>read5Min</b>: {{meterInterval.read5Min}}</li>
+        <li><b>readDateTime</b>: {{meterInterval.readDateTime}}</li>
+        <li><b>readValue</b>: {{meterInterval.readValue}}</li>
+        <li><b>uom</b>: {{meterInterval.uom}}</li>
+      </ul>
+    {{/each}}
+
+
+  </ul>
+{{/each}}
+
+<hr>
+
+<h1>customerLocations ({{model.customerLocations.length}})</h1>
+
+{{#each model.customerLocations as |customerLocation|}}
+
+  <ul>
+
+    <li><b>customerId</b>: {{customerLocation.customer.id}}</li>
+    <li><b>locationId</b>: {{customerLocation.location.id}}</li>
+    <li><b>accountLocationKey</b>: {{customerLocation.accountLocationKey}}</li>
+    <li><b>serviceStart</b>: {{customerLocation.serviceStart}}</li>
+    <li><b>serviceEnd</b>: {{customerLocation.serviceEnd}}</li>
+
+    <ul>
+      <li><b>Name</b>: {{customerLocation.customer.id}}</li>
+      <li><b>Name</b>: {{customerLocation.customer.name}}</li>
+    </ul>
+
+    <ul>
+      <li><b>id</b>: {{customerLocation.location.id}}</li>
+      <li><b>locationClass</b>: {{customerLocation.location.locationClass}}</li>
+      <li><b>address</b>: {{customerLocation.location.address}}</li>
+      <li><b>city</b>: {{customerLocation.location.city}}</li>
+      <li><b>state</b>: {{customerLocation.location.state}}</li>
+      <li><b>postalCode</b>: {{customerLocation.location.postalCode}}</li>
+    </ul>
+    
+  </ul>
+
+{{/each}}

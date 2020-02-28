@@ -23,4 +23,12 @@ export default function() {
 
     https://www.ember-cli-mirage.com/docs/route-handlers/shorthands
   */
+
+  this.get('/customers');
+  this.get('/locations');
+  this.get('/meters');
+  this.get('/customer-locations');
+  this.get('/meter-locations');
+  this.get('/meter-intervals');
+
 }
