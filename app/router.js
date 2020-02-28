@@ -8,6 +8,9 @@ const Router = EmberRouter.extend({
 
 Router.map(function() {
   this.route('demo');
+  this.route('meters', function() {
+    this.route('chart', {path: '/:id/chart'});
+  });
 });
 
 export default Router;

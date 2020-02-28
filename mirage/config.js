@@ -26,7 +26,14 @@ export default function() {
 
   this.get('/customers');
   this.get('/locations');
-  this.get('/meters');
+  this.get('/meters', (schema, request) => {
+    return schema.meters.all();
+  });
+  this.get('/meters/:id', (schema, request) => {
+    let id = request.params.id;
+
+    return schema.meters.find(id);
+  });
   this.get('/customer-locations');
   this.get('/meter-locations');
   this.get('/meter-intervals');
