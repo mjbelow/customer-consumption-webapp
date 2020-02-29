@@ -3,7 +3,7 @@ const { Model, attr, hasMany } = DS;
 
 export default Model.extend({
   meterType: attr('string'),
-  serviceType: attr('string'),
+  serviceType: attr('service-type'),
   region: attr('string'),
   intervalLength: attr('number'),
   channel1RawUom: attr('string'),

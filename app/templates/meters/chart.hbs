@@ -1,10 +1,11 @@
+<h3>Meter Info</h3>
 <ul>
   <li>{{model.id}}</li>
   <li>{{model.serviceType}}</li>
   <li>{{model.channel1RawUom}}</li>
 </ul>
 
-<span {{action 'mine'}}>ACTION</span>
+<hr>
 
 <div>
   {{ember-chart type='bar' data=chartData options=chartOptions width=1000 height=400}}

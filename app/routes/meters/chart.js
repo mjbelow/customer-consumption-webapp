@@ -32,19 +32,10 @@ export default Route.extend({
         spanGaps: true
       },{
         yAxisID: 'meter',
-        label: 'Electric',
+        label: model.serviceType,
         data: [2,1,0,4,7,3],
         backgroundColor:  'hsla(220,100%,61%,0.2)',
         borderColor: 'hsla(220,100%,61%,1)',
-        borderWidth: 1,
-        hoverBorderWidth: 4,
-        type: 'bar'
-      },{
-        yAxisID: 'gas_meter',
-        label: 'Gas',
-        data: [30,34,20,41,60,54],
-        backgroundColor:  'hsla(15,100%,61%,0.2)',
-        borderColor: 'hsla(15,100%,61%,1)',
         borderWidth: 1,
         hoverBorderWidth: 4,
         type: 'bar'
@@ -76,13 +67,10 @@ export default Route.extend({
         mode: 'single',
         //mode: 'dataset',
         callbacks: {
-          label: function(tooltipItems, data) { 
-            if(tooltipItems.datasetIndex === 2)
-              return tooltipItems.yLabel + ' CF';
-            else if(tooltipItems.datasetIndex === 1)
-              return tooltipItems.yLabel + ' KWH';
-            else if(tooltipItems.datasetIndex === 0)
+          label: function(tooltipItems, data) {
+            if(tooltipItems.datasetIndex === 0)
               return tooltipItems.yLabel + "(F°)"
+            return `${tooltipItems.yLabel} ${model.channel1RawUom}`;
           }
         }
       },
@@ -93,25 +81,12 @@ export default Route.extend({
             position: 'left',
             scaleLabel: {
               display: true,
-              labelString: 'Kilowatts (KWH)',
+              labelString: model.channel1RawUom,
               fontSize: 16
             },
             ticks: {
               beginAtZero: true,
-              max: Math.ceil((Math.max(...chartData.datasets[1].data)+5)/10)*10
-            }
-          },
-          {
-            id: 'gas_meter',
-            position: 'left',
-            scaleLabel: {
-              display: true,
-              labelString: 'Cubic Feet (CF)',
-              fontSize: 16
-            },
-            ticks: {
-              beginAtZero: true,
-              max: Math.ceil((Math.max(...chartData.datasets[2].data)+5)/10)*10
+              max: Math.ceil((Math.max(...chartData.datasets[1].data)+1)/10)*10
             }
           },
           {
@@ -130,7 +105,7 @@ export default Route.extend({
         ]
       },
       legend: {
-        display: false,
+        // display: false,
         onHover: function(e) {
           e.target.style.cursor = 'pointer';
         }
@@ -152,42 +127,23 @@ export default Route.extend({
           var chartData = activePoints[0]['_chart'].config.data;
           var idx = activePoints[0]['_index'];
   
-          // alert(idx);
-
-
-          //this.data.datasets[activePoints[0]['_datasetIndex']].data[idx] = this.data.datasets[activePoints[0]['_datasetIndex']].data[idx] + 1
-          chartData.datasets[activePoints[0]['_datasetIndex']].data[idx] = chartData.datasets[activePoints[0]['_datasetIndex']].data[idx] + 1
-          this.options.scales.yAxes[0].ticks.max = Math.ceil((Math.max(...chartData.datasets[1].data)+5)/10)*10
-          this.options.scales.yAxes[1].ticks.max = Math.ceil((Math.max(...chartData.datasets[2].data)+5)/10)*10
+          this.data.datasets[activePoints[0]['_datasetIndex']].data[idx] = this.data.datasets[activePoints[0]['_datasetIndex']].data[idx] + 1
+          this.options.scales.yAxes[0].ticks.max = Math.ceil((Math.max(...chartData.datasets[1].data)+1)/10)*10
 
           this.update()
 
           var label = this.data.labels[idx];
           var value = this.data.datasets[activePoints[0]['_datasetIndex']].data[idx];
-          
-          // set_data(idx, lvl);
-          // myChart.update()
   
           var datapoint = `label: ${label}\nvalue: ${value}`;
           console.log(datapoint);
         }
-        // var cdata = controller.get('chartData');
-        // cdata.datasets[0].data[0]= 80;
-        // controller.set('chartData', null);
-        // controller.set('chartData', cdata);
+
       }
     }
 
     controller.set('chartData', chartData);
     controller.set('chartOptions', chartOptions);
-
-    let actions = {
-      mine: function() {
-        alert()
-      }
-    }
-
-    controller.set('actions', actions)
 
   }
 
