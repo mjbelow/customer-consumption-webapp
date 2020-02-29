@@ -1,10 +1,10 @@
-<div style="width: 400px;">
+<div>
   {{#mdc-list}}
     {{#each model as |meter|}}
       {{#mdc-list-item-link-to "meters.chart" meter.id trailingIcon="arrow_forward"}}
-      {{#mdc-list-item-primary-text}}Meter Id: {{meter.id}}{{/mdc-list-item-primary-text}}
-      {{#mdc-list-item-secondary-text}} {{meter.serviceType}}{{/mdc-list-item-secondary-text}}
-      {{mdc-list-item-meta-icon "arrow_forward"}}
+        {{#mdc-list-item-primary-text}}Meter Id: {{meter.id}}{{/mdc-list-item-primary-text}}
+        {{#mdc-list-item-secondary-text}} {{meter.serviceType}}{{/mdc-list-item-secondary-text}}
+        {{mdc-list-item-meta-icon "arrow_forward"}}
       {{/mdc-list-item-link-to}}
     {{/each}}
   {{/mdc-list}}
