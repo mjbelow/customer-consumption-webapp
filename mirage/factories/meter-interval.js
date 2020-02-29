@@ -11,19 +11,19 @@ export default Factory.extend({
     // return (Math.floor(i/13)%24)+1;
   },
 
-  read30Min(i) {
+  read30Min() {
     return 0;
     // let data=[0,1,1,1,1,1,1,2,2,2,2,2,2]
     // return data[i%13];
   },
 
-  read15Min(i) {
+  read15Min() {
     return 0;
     // let data=[0,1,1,1,2,2,2,3,3,3,4,4,4]
     // return data[i%13];
   },
 
-  read5Min(i) {
+  read5Min() {
     return 0;
     // let data=[0,1,2,3,4,5,6,7,8,9,10,11,12]
     // return data[i%13]
@@ -52,10 +52,6 @@ export default Factory.extend({
       case 2:
         return Math.random()*20;
     }
-  },
-
-  afterCreate(interval, server) {
-    interval.channelId=4
   }
 
 });

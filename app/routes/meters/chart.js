@@ -1,3 +1,4 @@
+/*global Chart*/
 import Route from '@ember/routing/route';
 
 export default Route.extend({
@@ -67,7 +68,7 @@ export default Route.extend({
         mode: 'single',
         //mode: 'dataset',
         callbacks: {
-          label: function(tooltipItems, data) {
+          label: function(tooltipItems) {
             if(tooltipItems.datasetIndex === 0)
               return tooltipItems.yLabel + "(F°)"
             return `${tooltipItems.yLabel} ${model.channel1RawUom}`;
@@ -105,7 +106,7 @@ export default Route.extend({
         ]
       },
       legend: {
-        // display: false,
+        display: false,
         onHover: function(e) {
           e.target.style.cursor = 'pointer';
         }
@@ -127,16 +128,10 @@ export default Route.extend({
           var chartData = activePoints[0]['_chart'].config.data;
           var idx = activePoints[0]['_index'];
   
-          this.data.datasets[activePoints[0]['_datasetIndex']].data[idx] = this.data.datasets[activePoints[0]['_datasetIndex']].data[idx] + 1
-          this.options.scales.yAxes[0].ticks.max = Math.ceil((Math.max(...chartData.datasets[1].data)+1)/10)*10
+          this.data.datasets[activePoints[0]['_datasetIndex']].data[idx] = this.data.datasets[activePoints[0]['_datasetIndex']].data[idx] + 1;
+          this.options.scales.yAxes[0].ticks.max = Math.ceil((Math.max(...chartData.datasets[1].data)+1)/10)*10;
 
-          this.update()
-
-          var label = this.data.labels[idx];
-          var value = this.data.datasets[activePoints[0]['_datasetIndex']].data[idx];
-  
-          var datapoint = `label: ${label}\nvalue: ${value}`;
-          console.log(datapoint);
+          this.update();
         }
 
       }

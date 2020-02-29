@@ -26,7 +26,7 @@ export default function() {
 
   this.get('/customers');
   this.get('/locations');
-  this.get('/meters', (schema, request) => {
+  this.get('/meters', (schema) => {
     return schema.meters.all();
   });
   this.get('/meters/:id', (schema, request) => {
