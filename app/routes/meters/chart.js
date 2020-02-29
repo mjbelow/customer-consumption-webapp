@@ -9,6 +9,8 @@ export default Route.extend({
   setupController(controller, model) {
     this._super(controller, model);
 
+    Chart.defaults.scale.gridLines.display = false;
+
     let chartData = {
       labels: ["12:00am","1:00am","2:00am","3:00am","4:00am","5:00am"],
       datasets: [{
@@ -87,9 +89,6 @@ export default Route.extend({
       scales: {
         yAxes: [
           {
-            gridLines: {
-              display: false
-            },
             id: 'meter',
             position: 'left',
             scaleLabel: {
@@ -103,9 +102,6 @@ export default Route.extend({
             }
           },
           {
-            gridLines: {
-              display: false
-            },
             id: 'gas_meter',
             position: 'left',
             scaleLabel: {
@@ -119,9 +115,6 @@ export default Route.extend({
             }
           },
           {
-            gridLines: {
-              display: false
-            },
             id: 'temperature',
             position: 'right',
             scaleLabel: {
@@ -132,13 +125,6 @@ export default Route.extend({
             ticks: {
               min: 0,
               max: 100,
-            }
-          }
-        ],
-        xAxes: [
-          {
-            gridLines: {
-              display: false
             }
           }
         ]
