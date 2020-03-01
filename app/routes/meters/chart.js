@@ -55,6 +55,9 @@ export default Route.extend({
           ctx.textBaseline = 'bottom';
 
           this.data.datasets.forEach(function(dataset, i) {
+            if(i==0) {
+              return;
+            }
             var meta = chartInstance.controller.getDatasetMeta(i);
             meta.data.forEach(function(bar, index) {
               var data = dataset.data[index];
@@ -127,7 +130,7 @@ export default Route.extend({
         ]
       },
       legend: {
-        display: false,
+        display: true,
         onHover: function(e) {
           e.target.style.cursor = 'pointer';
         }
