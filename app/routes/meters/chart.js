@@ -12,6 +12,7 @@ export default Route.extend({
 
     Chart.defaults.scale.gridLines.display = false;
 
+    // set x labels based on raw data
     function xLabels(value) {
       let meridiem = "am";
       let hour = (value % 12) == 0 ? 12 : (value % 12);
@@ -23,12 +24,33 @@ export default Route.extend({
       return `${hour}:00${meridiem}`;
     }
 
+    // prevent data points from going above/below a max/min, but still retain original data
+    function trimData(arr, min, max) {
+      arr[1] = [];
+      let i;
+      let length = arr[0].length;
+      for(i = 0; i < length; i++)
+      {
+        arr[1][i] = (typeof min !== 'undefined') && (arr[0][i] < min) ? min : (typeof max !== 'undefined') && (arr[0][i] > max) ? max : arr[0][i];
+      }
+    }
+
+    var data = [
+      // temperature data
+      [[64,78,107,112,72,65]],
+      // meter data
+      [[2,1,-4,4,7,3]]
+    ]
+
+    trimData(data[0], 0, 100);
+    trimData(data[1], 0);
+
     let chartData = {
       labels: [21,22,23,0,1,2],
       datasets: [{
         yAxisID: 'temperature',
-        label: 'Temperature',
-        data: [32,45,78,65,50,40],
+        label: 'Temperature (F°)',
+        data: data[0][1],
         borderColor: "#404040",
         borderWidth: 1,
         type: 'line',
@@ -44,8 +66,8 @@ export default Route.extend({
         spanGaps: true
       },{
         yAxisID: 'meter',
-        label: model.serviceType,
-        data: [2,1,0,4,7,3],
+        label: `${model.serviceType} (${model.channel1RawUom})`,
+        data: data[1][1],
         backgroundColor:  'hsla(220,100%,61%,0.2)',
         borderColor: 'hsla(220,100%,61%,1)',
         borderWidth: 1,
@@ -66,13 +88,9 @@ export default Route.extend({
           ctx.textBaseline = 'bottom';
 
           this.data.datasets.forEach(function(dataset, i) {
-            if(i==0) {
-              return;
-            }
             var meta = chartInstance.controller.getDatasetMeta(i);
             meta.data.forEach(function(bar, index) {
-              var data = dataset.data[index];
-              ctx.fillText(data, bar._model.x, bar._model.y - 5);
+              ctx.fillText(data[i][0][index], bar._model.x, bar._model.y - 5);
             });
           });
         }
@@ -82,10 +100,9 @@ export default Route.extend({
         mode: 'single',
         //mode: 'dataset',
         callbacks: {
-          label: function(tooltipItems) {
-            if(tooltipItems.datasetIndex === 0)
-              return tooltipItems.yLabel + "(F°)";
-            return `${tooltipItems.yLabel} ${model.channel1RawUom}`;
+          label: function(tooltipItem, datasets) {
+            let uom = tooltipItem.datasetIndex === 0 ? 'F°' : model.channel1RawUom;
+            return `${data[tooltipItem.datasetIndex][0][tooltipItem.index]} ${uom}`;
           },
           title: function(tooltipItems) {
             return xLabels(tooltipItems[0].xLabel);
@@ -99,7 +116,7 @@ export default Route.extend({
             position: 'left',
             scaleLabel: {
               display: true,
-              labelString: model.channel1RawUom,
+              labelString: `${model.serviceType} (${model.channel1RawUom})`,
               fontSize: 16
             },
             ticks: {
