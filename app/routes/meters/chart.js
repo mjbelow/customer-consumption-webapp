@@ -87,7 +87,11 @@ export default Route.extend({
             },
             ticks: {
               beginAtZero: true,
-              max: Math.ceil((Math.max(...chartData.datasets[1].data)+1)/10)*10
+              max: Math.ceil((Math.max(...chartData.datasets[1].data)+Math.floor(Math.max(...chartData.datasets[1].data)/20) + 1)),
+              stepSize: Math.ceil((Math.max(...chartData.datasets[1].data)+Math.floor(Math.max(...chartData.datasets[1].data)/20) + 1)) / 6,
+              callback: function(value, index, values) {
+                return Math.floor(value);
+              }
             }
           },
           {
@@ -129,7 +133,10 @@ export default Route.extend({
           var idx = activePoints[0]['_index'];
   
           this.data.datasets[activePoints[0]['_datasetIndex']].data[idx] = this.data.datasets[activePoints[0]['_datasetIndex']].data[idx] + 1;
-          this.options.scales.yAxes[0].ticks.max = Math.ceil((Math.max(...chartData.datasets[1].data)+1)/10)*10;
+          let max = Math.max(...chartData.datasets[1].data);
+          let increment = Math.floor(max/20) + 1;
+          this.options.scales.yAxes[0].ticks.max = Math.ceil((max+increment));
+          this.options.scales.yAxes[0].ticks.stepSize = this.options.scales.yAxes[0].ticks.max / 6;
 
           this.update();
         }
