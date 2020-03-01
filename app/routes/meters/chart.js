@@ -26,7 +26,6 @@ export default Route.extend({
 
     // prevent data points from going above/below a max/min, but still retain original data
     function trimData(arr, min, max) {
-      arr[1] = [];
       let i;
       let length = arr[0].length;
       for(i = 0; i < length; i++)
@@ -37,13 +36,13 @@ export default Route.extend({
 
     var data = [
       // temperature data
-      [[64,78,107,112,72,65]],
+      [[94,95,107,112,72,65],[]],
       // meter data
-      [[2,1,-4,4,7,3]]
+      [[2,1,-4,4,7,3],[]]
     ]
 
     trimData(data[0], 0, 100);
-    trimData(data[1], 0);
+    trimData(data[1], .5);
 
     let chartData = {
       labels: [21,22,23,0,1,2],
@@ -77,22 +76,27 @@ export default Route.extend({
     };
 
     let chartOptions = {
-      // https://stackoverflow.com/questions/42556835/show-values-on-top-of-bars-in-chart-js
-      animation: {
-        onComplete: function() {
-          var chartInstance = this.chart,
-          ctx = chartInstance.ctx;
-
-          ctx.font = Chart.helpers.fontString(Chart.defaults.global.defaultFontSize, Chart.defaults.global.defaultFontStyle, Chart.defaults.global.defaultFontFamily);
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'bottom';
-
-          this.data.datasets.forEach(function(dataset, i) {
-            var meta = chartInstance.controller.getDatasetMeta(i);
-            meta.data.forEach(function(bar, index) {
-              ctx.fillText(data[i][0][index], bar._model.x, bar._model.y - 5);
-            });
-          });
+      plugins: {
+        datalabels: {
+          align: function(context) {
+            if(context.datasetIndex == 0 && data[context.datasetIndex][0][context.dataIndex] >= 95)
+              return 'bottom';
+            return 'top';
+          },
+          offset: function(context) {
+            if(context.datasetIndex == 0 && data[context.datasetIndex][0][context.dataIndex] >= 95)
+              return 10;
+            return 0;
+          },
+          anchor: 'end',
+          formatter: function(value, context) {
+            return data[context.datasetIndex][0][context.dataIndex];
+          },
+          display: function(context) {
+            if(context.datasetIndex == 0)
+              return 'auto';
+            return 'true';
+          }
         }
       },
       tooltips: {
@@ -173,7 +177,9 @@ export default Route.extend({
           var chartData = activePoints[0]['_chart'].config.data;
           var idx = activePoints[0]['_index'];
   
-          this.data.datasets[activePoints[0]['_datasetIndex']].data[idx] = this.data.datasets[activePoints[0]['_datasetIndex']].data[idx] + 1;
+          data[activePoints[0]['_datasetIndex']][0][idx] = data[activePoints[0]['_datasetIndex']][0][idx] + 1;
+          trimData(data[0], 0, 100);
+          trimData(data[1], .5);
           let max = Math.max(...chartData.datasets[1].data);
           let increment = Math.floor(max/20) + 1;
           this.options.scales.yAxes[0].ticks.max = Math.ceil((max+increment));

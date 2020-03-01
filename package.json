@@ -122,5 +122,8 @@
   },
   "engines": {
     "node": "8.* || >= 10.*"
+  },
+  "dependencies": {
+    "chartjs-plugin-datalabels": "^0.7.0"
   }
 }
