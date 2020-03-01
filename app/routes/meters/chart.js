@@ -12,6 +12,17 @@ export default Route.extend({
 
     Chart.defaults.scale.gridLines.display = false;
 
+    function xLabels(value) {
+      let meridiem = "am";
+      let hour = (value % 12) == 0 ? 12 : (value % 12);
+
+      if(value > 11) {
+        meridiem = "pm";
+      }
+
+      return `${hour}:00${meridiem}`;
+    }
+
     let chartData = {
       labels: [21,22,23,0,1,2],
       datasets: [{
@@ -73,8 +84,11 @@ export default Route.extend({
         callbacks: {
           label: function(tooltipItems) {
             if(tooltipItems.datasetIndex === 0)
-              return tooltipItems.yLabel + "(F°)"
+              return tooltipItems.yLabel + "(F°)";
             return `${tooltipItems.yLabel} ${model.channel1RawUom}`;
+          },
+          title: function(tooltipItems) {
+            return xLabels(tooltipItems[0].xLabel);
           }
         }
       },
@@ -114,17 +128,7 @@ export default Route.extend({
         xAxes: [
           {
             ticks: {
-              callback: function(value, index, values) {
-                let meridiem = "am";
-                let hour = value % 12 == 0 ? 12 : (value % 12);
-
-                if(value > 11) {
-                  meridiem = "pm";
-                }
-
-                return `${hour}:00${meridiem}`;
-                
-              }
+              callback: xLabels
             }
           }
         ]
