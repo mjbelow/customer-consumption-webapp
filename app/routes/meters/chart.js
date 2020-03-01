@@ -13,7 +13,7 @@ export default Route.extend({
     Chart.defaults.scale.gridLines.display = false;
 
     let chartData = {
-      labels: ["12:00am","1:00am","2:00am","3:00am","4:00am","5:00am"],
+      labels: [21,22,23,0,1,2],
       datasets: [{
         yAxisID: 'temperature',
         label: 'Temperature',
@@ -105,6 +105,23 @@ export default Route.extend({
             ticks: {
               min: 0,
               max: 100,
+            }
+          }
+        ],
+        xAxes: [
+          {
+            ticks: {
+              callback: function(value, index, values) {
+                let meridiem = "am";
+                let hour = value % 12 == 0 ? 12 : (value % 12);
+
+                if(value > 11) {
+                  meridiem = "pm";
+                }
+
+                return `${hour}:00${meridiem}`;
+                
+              }
             }
           }
         ]
