@@ -79,11 +79,13 @@ export default Route.extend({
       plugins: {
         datalabels: {
           align: function(context) {
+            // move label to bottom when temperature data point is near the top
             if(context.datasetIndex == 0 && data[context.datasetIndex][0][context.dataIndex] >= 95)
-              return 'bottom';
+            return 'bottom';
             return 'top';
           },
           offset: function(context) {
+            // increase offset of label when temperature data point is near the top
             if(context.datasetIndex == 0 && data[context.datasetIndex][0][context.dataIndex] >= 95)
               return 10;
             return 0;
@@ -93,6 +95,7 @@ export default Route.extend({
             return data[context.datasetIndex][0][context.dataIndex];
           },
           display: function(context) {
+            // this will hide the first dataset label if other dataset label overlaps
             if(context.datasetIndex == 0)
               return 'auto';
             return 'true';
@@ -104,7 +107,7 @@ export default Route.extend({
         mode: 'single',
         //mode: 'dataset',
         callbacks: {
-          label: function(tooltipItem, datasets) {
+          label: function(tooltipItem) {
             let uom = tooltipItem.datasetIndex === 0 ? 'F°' : model.channel1RawUom;
             return `${data[tooltipItem.datasetIndex][0][tooltipItem.index]} ${uom}`;
           },
@@ -127,7 +130,7 @@ export default Route.extend({
               beginAtZero: true,
               max: Math.ceil((Math.max(...chartData.datasets[1].data)+Math.floor(Math.max(...chartData.datasets[1].data)/20) + 1)),
               stepSize: Math.ceil((Math.max(...chartData.datasets[1].data)+Math.floor(Math.max(...chartData.datasets[1].data)/20) + 1)) / 6,
-              callback: function(value, index, values) {
+              callback: function(value) {
                 return Math.floor(value);
               }
             }
