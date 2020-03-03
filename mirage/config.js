@@ -38,4 +38,6 @@ export default function() {
   this.get('/meter-locations');
   this.get('/meter-intervals');
 
+  this.passthrough('https://localhost:5001/**');
+
 }

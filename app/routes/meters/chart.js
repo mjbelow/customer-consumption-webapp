@@ -1,5 +1,6 @@
 /*global Chart*/
 import Route from '@ember/routing/route';
+import { hash } from 'rsvp';
 
 export default Route.extend({
 
@@ -8,8 +9,15 @@ export default Route.extend({
     this.set('month', parseInt(params.month, 10));
     this.set('day', parseInt(params.day, 10));
     this.set('hour', parseInt(params.hour, 10));
+
+    // coordinates for Knoxville
+    let latitude = '35.9606';
+    let longitude = '-83.9207'
     
-    return this.store.findRecord('meter', params.id);
+    return hash({
+      meter: this.store.findRecord('meter', params.id),
+      weather: this.store.queryRecord('weather', {latitude: latitude, longitude: longitude, year: this.get('year'), month: this.get('month'), day: this.get('day'), hour: this.get('hour')})
+    });
   },
 
   setupController(controller, model) {
@@ -50,9 +58,19 @@ export default Route.extend({
       return arr;
     }
 
+    function getTemperature(hour) {
+      let arr = [];
+      let i;
+      for(i = 0; i < 6; i++)
+      {
+        arr.push(model.weather.hourly[(hour+i)%24].temperature);
+      }
+      return arr;
+    }
+
     var data = [
       // temperature data
-      [[94,95,107,112,72,65],[]],
+      [getTemperature(this.get('hour')),[]],
       // meter data
       [[2,1,-4,4,7,3],[]]
     ]
@@ -75,13 +93,13 @@ export default Route.extend({
         borderDashOffset: 0,
         pointBackgroundColor: "#808080",
         pointHoverBorderWidth: 2,
-        pointRadius: 4,
-        pointHitRadius: 4,
-        pointHoverRadius: 8,
+        pointRadius: 5,
+        pointHitRadius: 5,
+        pointHoverRadius: 5,
         spanGaps: true
       },{
         yAxisID: 'meter',
-        label: `${model.serviceType} (${model.channel1RawUom})`,
+        label: `${model.meter.serviceType} (${model.meter.channel1RawUom})`,
         data: data[1][1],
         backgroundColor:  'hsla(220,100%,61%,0.2)',
         borderColor: 'hsla(220,100%,61%,1)',
@@ -120,11 +138,12 @@ export default Route.extend({
       },
       tooltips: {
         enabled: true,
-        mode: 'single',
+        mode: 'nearest',
+        intersect: true,
         //mode: 'dataset',
         callbacks: {
           label: function(tooltipItem) {
-            let uom = tooltipItem.datasetIndex === 0 ? 'F°' : model.channel1RawUom;
+            let uom = tooltipItem.datasetIndex === 0 ? 'F°' : model.meter.channel1RawUom;
             return `${data[tooltipItem.datasetIndex][0][tooltipItem.index]} ${uom}`;
           },
           title: function(tooltipItems) {
@@ -139,7 +158,7 @@ export default Route.extend({
             position: 'left',
             scaleLabel: {
               display: true,
-              labelString: `${model.serviceType} (${model.channel1RawUom})`,
+              labelString: `${model.meter.serviceType} (${model.meter.channel1RawUom})`,
               fontSize: 16
             },
             ticks: {
