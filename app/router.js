@@ -9,7 +9,7 @@ const Router = EmberRouter.extend({
 Router.map(function() {
   this.route('demo');
   this.route('meters', function() {
-    this.route('chart', {path: '/:id/chart'});
+    this.route('chart', {path: '/:id/:year/:month/:day/:hour'});
   });
 });
 

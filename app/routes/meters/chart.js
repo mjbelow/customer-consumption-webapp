@@ -4,6 +4,11 @@ import Route from '@ember/routing/route';
 export default Route.extend({
 
   model(params) {
+    this.set('year', parseInt(params.year, 10));
+    this.set('month', parseInt(params.month, 10));
+    this.set('day', parseInt(params.day, 10));
+    this.set('hour', parseInt(params.hour, 10));
+    
     return this.store.findRecord('meter', params.id);
   },
 
@@ -34,6 +39,17 @@ export default Route.extend({
       }
     }
 
+    // generate hours for x axes
+    function getHours(hour) {
+      let arr = [];
+      let i;
+      for(i = 0; i < 6; i++)
+      {
+        arr.push((hour+i)%24);
+      }
+      return arr;
+    }
+
     var data = [
       // temperature data
       [[94,95,107,112,72,65],[]],
@@ -45,7 +61,7 @@ export default Route.extend({
     trimData(data[1], .5);
 
     let chartData = {
-      labels: [21,22,23,0,1,2],
+      labels: getHours(this.get('hour')),
       datasets: [{
         yAxisID: 'temperature',
         label: 'Temperature (F°)',
