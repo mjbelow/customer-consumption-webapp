@@ -39,5 +39,6 @@ export default function() {
   this.get('/meter-intervals');
 
   this.passthrough('https://localhost:5001/**');
+  this.passthrough('https://customer-consumption-api.azurewebsites.net/**');
 
 }
