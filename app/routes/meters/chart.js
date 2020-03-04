@@ -10,20 +10,51 @@ export default Route.extend({
     this.set('day', parseInt(params.day, 10));
     this.set('hour', parseInt(params.hour, 10));
 
+    let date = new Date(`${params.year}-${params.month}-${params.day}`);
+    date.setHours(date.getHours() + this.get('hour') + (date.getTimezoneOffset()/60));
+
+    this.set('date', date);
+
     // coordinates for Knoxville
-    let latitude = '35.9606';
-    let longitude = '-83.9207'
+    this.set('latitude', 35.973);
+    this.set('longitude', -83.9695);
     
     return hash({
-      meter: this.store.findRecord('meter', params.id),
-      weather: this.store.queryRecord('weather', {latitude: latitude, longitude: longitude, year: this.get('year'), month: this.get('month'), day: this.get('day'), hour: this.get('hour')})
+      meter: this.store.findRecord('meter', params.id, {include: 'meter-intervals'}),
+      weather: this.store.queryRecord('weather', {latitude: this.get('latitude'), longitude: this.get('longitude'), year: this.get('year'), month: this.get('month'), day: this.get('day'), hour: this.get('hour')})
     });
   },
-
+  
   setupController(controller, model) {
     this._super(controller, model);
 
+    var howMany = 6;
+
+    controller.set('latitude', this.get('latitude'));
+    controller.set('longitude', this.get('longitude'));
+
     Chart.defaults.scale.gridLines.display = false;
+
+    let date = (this.get('date'));
+
+    let meterIntervals = model.meter.meterIntervals.toArray();
+    let meterIntervalData = [];
+    {
+      let length = meterIntervals.length;
+      let i;
+      let count = 0;
+      for(i = 0; i < length; i++)
+      {
+        let readDateTime = meterIntervals[i].get('readDateTime');
+        if(readDateTime >= date) {
+          meterIntervalData.push(meterIntervals[i].get('readValue'));
+          count++;
+        }
+        if(count >= howMany) {
+          break;
+        }
+      }
+    }
 
     // set x labels based on raw data
     function xLabels(value) {
@@ -36,50 +67,62 @@ export default Route.extend({
 
       return `${hour}:00${meridiem}`;
     }
-
+    
     // prevent data points from going above/below a max/min, but still retain original data
     function trimData(arr, min, max) {
       let i;
-      let length = arr[0].length;
-      for(i = 0; i < length; i++)
+      arr[1].length = 0;
+      for(i = 0; i < howMany; i++)
       {
         arr[1][i] = (typeof min !== 'undefined') && (arr[0][i] < min) ? min : (typeof max !== 'undefined') && (arr[0][i] > max) ? max : arr[0][i];
       }
     }
 
     // generate hours for x axes
-    function getHours(hour) {
-      let arr = [];
+    function getHours(hour, arr) {
+      arr.length = 0;
       let i;
-      for(i = 0; i < 6; i++)
+      for(i = 0; i < howMany; i++)
       {
         arr.push((hour+i)%24);
       }
       return arr;
     }
 
-    function getTemperature(hour) {
-      let arr = [];
+    function getTemperatureData(hour, arr) {
+      arr.length = 0;
       let i;
-      for(i = 0; i < 6; i++)
+      for(i = 0; i < howMany; i++)
       {
         arr.push(model.weather.hourly[(hour+i)%24].temperature);
       }
       return arr;
     }
 
+    function getMeterData(hour, arr) {
+      arr.length = 0;
+      let i;
+      for(i = 0; i < howMany; i++)
+      {
+        arr.push((Math.random()*20).toFixed(2));
+      }
+      return arr;
+    }
+
     var data = [
       // temperature data
-      [getTemperature(this.get('hour')),[]],
+      [getTemperatureData(this.get('hour'),[]),[]],
       // meter data
-      [[2,1,-4,4,7,3],[]]
+      [meterIntervalData,[]],
+      // time of day
+      getHours(this.get('hour'),[])
     ]
 
     trimData(data[0], 0, 100);
     trimData(data[1], .5);
 
     let chartData = {
-      labels: getHours(this.get('hour')),
+      labels: data[2],
       datasets: [{
         yAxisID: 'temperature',
         label: 'Temperature (F°)',

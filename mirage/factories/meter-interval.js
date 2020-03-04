@@ -3,7 +3,7 @@ import { Factory } from 'ember-cli-mirage';
 export default Factory.extend({
 
   readDate(i) {
-    return new Date((Math.floor((i+1)/24))*24*60*60*1000+5*60*60*1000);
+    return new Date().setHours(0,0,0,0) - (24*60*60*1000) + ((i%72)*60*60*1000);
   },
 
   readHour(i) {
@@ -30,7 +30,7 @@ export default Factory.extend({
   },
 
   readDateTime(i) {
-    return new Date((i+5+1)*60*60*1000);
+    return new Date().setHours(0,0,0,0) - (24*60*60*1000) + ((i%72)*60*60*1000);
   },
 
   readValue(i) {

@@ -8,8 +8,8 @@ export default Model.extend({
   read30Min: attr('number'),
   read15Min: attr('number'),
   read5Min: attr('number'),
-  readDateTime: attr('date'),
-  readValue: attr('number'),
+  readDateTime: attr('date-time'),
+  readValue: attr('decimal'),
   uom: attr('string'),
   meter: belongsTo('meter')
 });
