@@ -99,16 +99,6 @@ export default Route.extend({
       return arr;
     }
 
-    function getMeterData(hour, arr) {
-      arr.length = 0;
-      let i;
-      for(i = 0; i < howMany; i++)
-      {
-        arr.push((Math.random()*20).toFixed(2));
-      }
-      return arr;
-    }
-
     var data = [
       // temperature data
       [getTemperatureData(this.get('hour'),[]),[]],
