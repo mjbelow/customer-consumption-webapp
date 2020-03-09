@@ -10,8 +10,8 @@ export default Route.extend({
     this.set('day', parseInt(params.day, 10));
     this.set('hour', parseInt(params.hour, 10));
 
-    let date = new Date(`${params.year}-${params.month}-${params.day}`);
-    date.setHours(date.getHours() + this.get('hour') + (date.getTimezoneOffset()/60));
+    let date = new Date(`${params.year}/${params.month}/${params.day}`);
+    date.setHours(this.get('hour'));
 
     this.set('date', date);
 
@@ -20,7 +20,13 @@ export default Route.extend({
     this.set('longitude', -83.9695);
     
     return hash({
-      meter: this.store.findRecord('meter', params.id, {include: 'meter-intervals'}),
+      meter: this.store.query('meter', {include: 'meter-intervals',
+        filter: {
+          id: params.id,
+          year: this.get('year'),
+          month: this.get('month'),
+          day: this.get('day')}
+        }).then(meters => meters.get("firstObject")),
       weather: this.store.queryRecord('weather', {latitude: this.get('latitude'), longitude: this.get('longitude'), year: this.get('year'), month: this.get('month'), day: this.get('day'), hour: this.get('hour')})
     });
   },

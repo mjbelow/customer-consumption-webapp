@@ -26,7 +26,30 @@ export default function() {
 
   this.get('/customers');
   this.get('/locations');
-  this.get('/meters', (schema) => {
+  this.get('/meters', (schema, request) => {
+    
+    if(request.queryParams['filter[id]']) {
+      let today = new Date(`${request.queryParams['filter[year]']}/${request.queryParams['filter[month]']}/${request.queryParams['filter[day]']}`);
+      let tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      let found = false;
+      return schema.meters.all().filter(function(meter) {
+
+        if(meter.attrs.id != (request.queryParams['filter[id]']) || found) {
+          return false;
+        }
+        else {
+          found = true;
+        }
+
+        meter.meterIntervals = meter.meterIntervals.filter(function(meterInterval) {
+          return (meterInterval.readDateTime >= today) && (meterInterval.readDateTime < tomorrow);
+        })
+
+        return true;
+      })
+    }
+
     return schema.meters.all();
   });
   this.get('/meters/:id', (schema, request) => {
