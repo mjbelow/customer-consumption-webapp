@@ -136,10 +136,25 @@ export default Route.extend({
     trimData(data[1], .5);
     let n = [6];
 
-    let prevDataCount = 0;
+    let prevDataCount;
+
+    if(window.innerWidth > 2131)
+      prevDataCount = 36;
+    else if(window.innerWidth > 1802)
+      prevDataCount = 30;
+    else if(window.innerWidth > 1472)
+      prevDataCount = 24;
+    else if(window.innerWidth > 1142)
+      prevDataCount = 18;
+    else if(window.innerWidth > 812)
+      prevDataCount = 12;
+    else if(window.innerWidth > 482)
+      prevDataCount = 6;
+    else
+      prevDataCount = 3;
 
     let chartData = {
-      labels: data[2][0].slice(0,6),
+      labels: data[2][0].slice(0, prevDataCount),
       datasets: [{
         yAxisID: 'temperature',
         label: 'Temperature (F°)',
