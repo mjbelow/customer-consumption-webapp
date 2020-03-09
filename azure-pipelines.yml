@@ -26,9 +26,6 @@ steps:
 - script: npm run build
   displayName: 'Build'
 
-- script: npm run test
-  displayName: 'Test'
-
 - script: dir
 
 - task: AzureFileCopy@3

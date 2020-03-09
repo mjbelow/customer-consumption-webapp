@@ -1,0 +1,24 @@
+<h3>Meter Info</h3>
+<ul>
+  <li>{{model.meter.id}}</li>
+  <li>{{model.meter.serviceType}}</li>
+  <li>{{model.meter.channel1RawUom}}</li>
+</ul>
+
+<hr>
+
+<div>
+  {{ember-chart type="bar" data=chartData options=chartOptions width=1000 height=400}}
+</div>
+<p align="right">
+  <a href="https://darksky.net/forecast/{{latitude}},{{longitude}}"><img src="https://darksky.net/favicon.ico" width="16" height="16" alt="icon">Dark Sky</a>
+</p>
+
+<ul>
+  {{#each model.meter.meterIntervals as |meterInterval index|}}
+    <li>[{{index}}]<br>{{meterInterval.readDateTime}}</li>
+    <ul>
+      <li>{{meterInterval.readValue}}</li>
+    </ul>
+  {{/each}}
+</ul>
