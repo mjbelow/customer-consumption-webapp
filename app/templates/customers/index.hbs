@@ -1,0 +1,7 @@
+{{#mdc-list}}
+  {{#each model as |customer|}}
+    {{#mdc-list-item-link-to "customers.customer" customer.id trailingIcon="arrow_forward"}}
+      {{customer.name}}{{mdc-list-item-meta-icon "arrow_forward"}}
+    {{/mdc-list-item-link-to}}
+  {{/each}}
+{{/mdc-list}}

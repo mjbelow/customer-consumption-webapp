@@ -1,0 +1,37 @@
+{{#mdc-card class="standard"}}
+  <div class="content">
+    {{model.name}}
+
+    <div class="content">
+      {{#each model.customerLocations as |locations|}}
+        <hr>
+        {{locations.location.address}}
+        <br>
+        {{locations.location.city}}, {{locations.location.state}} {{locations.location.postalCode}}
+      {{/each}}
+      <hr>
+    </div>
+  </div>
+{{/mdc-card}}
+
+<div class="options">
+  {{#mdc-button click=(action (mut open) true) style="outlined"}}
+    {{#mdc-button-label}}Meters{{/mdc-button-label}}
+    {{mdc-button-icon "arrow_drop_down"}}
+  {{/mdc-button}}
+
+  {{#mdc-menu open=open anchorCorner="bottomLeft"}}
+    {{#mdc-menu-list}}
+      <li>
+        {{#each model.customerLocations as |locations|}}
+          {{#each locations.location.meterLocations as |meterLocations|}}
+            {{#mdc-menu-item}}
+              {{#mdc-menu-item-text}}{{meterLocations.meter.id}}{{/mdc-menu-item-text}}
+            {{/mdc-menu-item}}
+            {{mdc-list-divider}}
+          {{/each}}
+        {{/each}}
+      </li>
+    {{/mdc-menu-list}}
+  {{/mdc-menu}}
+</div>

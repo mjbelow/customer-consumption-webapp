@@ -11,6 +11,9 @@ Router.map(function() {
   this.route('meters', function() {
     this.route('chart', {path: '/:id/:year/:month/:day/:hour'});
   });
+  this.route('customers', function() {
+    this.route('customer', {path: '/:id'});
+  });
 });
 
 export default Router;
