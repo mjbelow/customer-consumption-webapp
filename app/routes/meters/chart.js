@@ -134,7 +134,6 @@ export default Route.extend({
 
     trimData(data[0], 0, 100);
     trimData(data[1], .5);
-    let n = [6];
 
     let prevDataCount;
 
@@ -189,19 +188,19 @@ export default Route.extend({
         datalabels: {
           align: function(context) {
             // move label to bottom when temperature data point is near the top
-            if(context.datasetIndex == 0 && data[context.datasetIndex][0][context.dataIndex] >= 95)
+            if(context.datasetIndex == 0 && data[0][0][context.dataIndex] >= 95)
             return 'bottom';
             return 'top';
           },
           offset: function(context) {
             // increase offset of label when temperature data point is near the top
-            if(context.datasetIndex == 0 && data[context.datasetIndex][0][context.dataIndex] >= 95)
+            if(context.datasetIndex == 0 && data[0][0][context.dataIndex] >= 95)
               return 10;
             return 0;
           },
           anchor: 'end',
           formatter: function(value, context) {
-            return data[context.datasetIndex][0][context.dataIndex];
+            return parseFloat(data[context.datasetIndex][0][context.dataIndex]).toFixed(2);
           },
           display: function(context) {
             // this will hide the first dataset label if other dataset label overlaps
@@ -219,7 +218,7 @@ export default Route.extend({
         callbacks: {
           label: function(tooltipItem) {
             let uom = tooltipItem.datasetIndex === 0 ? 'F°' : model.meter.channel1RawUom;
-            return `${data[tooltipItem.datasetIndex][0][tooltipItem.index]} ${uom}`;
+            return `${parseFloat(data[tooltipItem.datasetIndex][0][tooltipItem.index]).toFixed(2)} ${uom}`;
           },
           title: function(tooltipItems) {
             // return xLabels(tooltipItems[0].xLabel);
@@ -241,7 +240,7 @@ export default Route.extend({
               max: Math.ceil((Math.max(...chartData.datasets[1].data)+Math.floor(Math.max(...chartData.datasets[1].data)/20) + 1)),
               stepSize: Math.ceil((Math.max(...chartData.datasets[1].data)+Math.floor(Math.max(...chartData.datasets[1].data)/20) + 1)) / 6,
               callback: function(value) {
-                return Math.floor(value);
+                return value == 0 ? 0 : value.toFixed(2);
               }
             }
           },
@@ -290,7 +289,7 @@ export default Route.extend({
           var chartData = activePoints[0]['_chart'].config.data;
           var idx = activePoints[0]['_index'];
   
-          data[activePoints[0]['_datasetIndex']][0][idx] = data[activePoints[0]['_datasetIndex']][0][idx] + 1;
+          data[activePoints[0]['_datasetIndex']][0][idx] = Number(data[activePoints[0]['_datasetIndex']][0][idx]) + 1;
           trimData(data[0], 0, 100);
           trimData(data[1], .5);
           let max = Math.max(...chartData.datasets[1].data);
