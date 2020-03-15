@@ -1,9 +1,8 @@
 import DS from 'ember-data';
 
-export default DS.RESTAdapter.extend({
+export default DS.JSONAPIAdapter.extend({
   host: 'https://customer-consumption-api.azurewebsites.net',
-
   pathForType() {
-    return 'weatherforecast';
+    return 'customerLocations';
   }
 });
