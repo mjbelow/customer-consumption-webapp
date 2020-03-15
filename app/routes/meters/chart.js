@@ -41,24 +41,10 @@ export default Route.extend({
 
     Chart.defaults.scale.gridLines.display = false;
 
-    let date = (this.get('date'));
-
     let meterIntervalData = [];
     model.meter.meterIntervals.forEach(data => {
       meterIntervalData.push(data.get('readValue'));
     })
-
-    // set x labels based on raw data
-    function xLabels(value) {
-      let meridiem = "am";
-      let hour = (value % 12) == 0 ? 12 : (value % 12);
-
-      if(value > 11) {
-        meridiem = "pm";
-      }
-
-      return `${hour}:00${meridiem}`;
-    }
     
     // prevent data points from going above/below a max/min, but still retain original data
     function trimData(arr, min, max) {
@@ -219,9 +205,6 @@ export default Route.extend({
           label: function(tooltipItem) {
             let uom = tooltipItem.datasetIndex === 0 ? 'F°' : model.meter.channel1RawUom;
             return `${parseFloat(data[tooltipItem.datasetIndex][0][tooltipItem.index]).toFixed(2)} ${uom}`;
-          },
-          title: function(tooltipItems) {
-            // return xLabels(tooltipItems[0].xLabel);
           }
         }
       },
