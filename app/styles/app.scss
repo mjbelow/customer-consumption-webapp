@@ -10,9 +10,14 @@ body {
 //   overflow: hidden;
 // }
 
-.options {
+#options_container {
   width: 350px;
   margin: auto;
+}
+
+.options {
+  width: 175px;
+  float: left;
 }
 
 .mdc-card {

@@ -3,26 +3,49 @@
     {{model.name}}
 
     <div class="content">
-      {{#each model.customerLocations as |locations|}}
-        <hr>
-        {{locations.location.address}}
-        <br>
-        {{locations.location.city}}, {{locations.location.state}} {{locations.location.postalCode}}
-      {{/each}}
+      <hr>
+      {{model.customerLocations.firstObject.location.address}}
+      <br>
+      {{model.customerLocations.firstObject.location.city}} {{model.customerLocations.firstObject.location.state}} {{model.customerLocations.firstObject.location.postalCode}}
       <hr>
     </div>
   </div>
 {{/mdc-card}}
 
-<div class="options">
-  {{#mdc-button click=(action (mut open) true) style="outlined"}}
-    {{#mdc-button-label}}Meters{{/mdc-button-label}}
-    {{mdc-button-icon "arrow_drop_down"}}
-  {{/mdc-button}}
+<div id="options_container">
 
-  {{#mdc-menu open=open anchorCorner="bottomLeft"}}
-    {{#mdc-menu-list}}
-      <li>
+  <div class="options">
+    <div>
+      Locations:
+    </div>
+    {{#mdc-button click=(action (mut locations) true) style="outlined"}}
+      {{#mdc-button-label}}{{model.customerLocations.firstObject.location.address}}{{/mdc-button-label}}
+      {{mdc-button-icon "arrow_drop_down"}}
+    {{/mdc-button}}
+
+    {{#mdc-menu open=locations anchorCorner="bottomLeft"}}
+      {{#mdc-menu-list}}
+        {{#each model.customerLocations as |locations|}}
+          {{#mdc-menu-item}}
+            {{#mdc-menu-item-text}}{{locations.location.address}}{{/mdc-menu-item-text}}
+          {{/mdc-menu-item}}
+          {{mdc-list-divider}}
+        {{/each}}
+      {{/mdc-menu-list}}
+    {{/mdc-menu}}
+  </div>
+
+  <div class="options">
+    <div>
+      Meters:
+    </div>
+    {{#mdc-button click=(action (mut meters) true) style="outlined"}}
+      {{#mdc-button-label}}{{model.customerLocations.firstObject.location.meterLocations.firstObject.meter.id}}{{/mdc-button-label}}
+      {{mdc-button-icon "arrow_drop_down"}}
+    {{/mdc-button}}
+
+    {{#mdc-menu open=meters anchorCorner="bottomLeft"}}
+      {{#mdc-menu-list}}
         {{#each model.customerLocations as |locations|}}
           {{#each locations.location.meterLocations as |meterLocations|}}
             {{#mdc-menu-item}}
@@ -31,7 +54,8 @@
             {{mdc-list-divider}}
           {{/each}}
         {{/each}}
-      </li>
-    {{/mdc-menu-list}}
-  {{/mdc-menu}}
+      {{/mdc-menu-list}}
+    {{/mdc-menu}}
+  </div>
+
 </div>
