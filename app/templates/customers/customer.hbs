@@ -48,9 +48,9 @@
       {{#mdc-menu-list}}
         {{#each model.customerLocations as |locations|}}
           {{#each locations.location.meterLocations as |meterLocations|}}
-            {{#mdc-menu-item}}
+            {{#mdc-menu-item-link-to "customers.customer.meter" meterLocations.meter.id}}
               {{#mdc-menu-item-text}}{{meterLocations.meter.id}}{{/mdc-menu-item-text}}
-            {{/mdc-menu-item}}
+            {{/mdc-menu-item-link-to}}
             {{mdc-list-divider}}
           {{/each}}
         {{/each}}
@@ -59,3 +59,5 @@
   </div>
 
 </div>
+
+{{outlet}}

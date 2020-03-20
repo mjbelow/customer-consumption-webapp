@@ -12,7 +12,9 @@ Router.map(function() {
     this.route('chart', {path: '/:id/:year/:month/:day/:hour'});
   });
   this.route('customers', function() {
-    this.route('customer', {path: '/:id'});
+    this.route('customer', {path: '/:id'}, function() {
+      this.route('meter', {path: '/:meterId'});
+    });
   });
 });
 

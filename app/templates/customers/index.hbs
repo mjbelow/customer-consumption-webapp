@@ -1,6 +1,6 @@
 {{#mdc-list}}
   {{#each model as |customer|}}
-    {{#mdc-list-item-link-to "customers.customer" customer.id trailingIcon="arrow_forward"}}
+    {{#mdc-list-item-link-to "customers.customer.meter" customer.id customer.customerLocations.firstObject.location.meterLocations.firstObject.meter.id trailingIcon="arrow_forward"}}
       {{customer.name}}{{mdc-list-item-meta-icon "arrow_forward"}}
     {{/mdc-list-item-link-to}}
   {{/each}}
