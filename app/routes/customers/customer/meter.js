@@ -7,15 +7,28 @@ export default Route.extend({
   model(params) {
     this.set('params',params);
 
+    let date = new Date("2019/8/23");
+    let tomorrow = new Date(date);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    let range = [`ge:${date.toLocaleDateString()}`, `lt:${tomorrow.toLocaleDateString()}`];
+
     return hash({
       meter: this.store.findRecord('meter', params.meterId),
       meterIntervals: this.store.query('meterInterval', {
         filter: {
           "meter.id": params.meterId,
-          readDate: "2018-09-03"
-        }
+          readdatetime: range,
+          channelId: 1
+        },
+        sort: "readdatetime"
       }),
-      id: params.meterId
+      weather: this.store.query('weather', {
+        filter: {
+          readdatetime: range
+        },
+        sort: "readdatetime"
+      })
     });
   },
 
@@ -26,6 +39,18 @@ export default Route.extend({
     let params = this.get('params');
 
     Chart.defaults.scale.gridLines.display = false;
+
+    // get temperature data
+    let temperatureData = [];
+    model.weather.forEach(data => {
+      temperatureData.push(data.get('value'));
+    })
+
+    // get meter data
+    let meterData = [];
+    model.meterIntervals.forEach(data => {
+      meterData.push(data.get('readValue'))
+    })
 
     // prevent data points from going above/below a max/min, but still retain original data
     function trimData(arr, min, max) {
@@ -49,9 +74,9 @@ export default Route.extend({
 
     var data = [
       // temperature data
-      [getData(50,120,24,[]),[]],
+      [temperatureData,[]],
       // meter data
-      [getData(0,10,24,[]),[]],
+      [meterData,[]],
     ]
 
     trimData(data[0], 0, 100);
@@ -135,12 +160,7 @@ export default Route.extend({
               fontSize: 16
             },
             ticks: {
-              beginAtZero: true,
-              max: Math.ceil((Math.max(...chartData.datasets[1].data)+Math.floor(Math.max(...chartData.datasets[1].data)/20) + 1)),
-              stepSize: Math.ceil((Math.max(...chartData.datasets[1].data)+Math.floor(Math.max(...chartData.datasets[1].data)/20) + 1)) / 6,
-              callback: function(value) {
-                return value == 0 ? 0 : value.toFixed(2);
-              }
+              beginAtZero: true
             }
           },
           {
@@ -190,24 +210,7 @@ export default Route.extend({
   
           data[activePoints[0]['_datasetIndex']][0][idx] = Number(data[activePoints[0]['_datasetIndex']][0][idx]) + 1;
           trimData(data[0], 0, 100);
-          trimData(data[1], .5);
-          let max = Math.max(...chartData.datasets[1].data);
-          let increment = Math.floor(max/20) + 1;
-          this.options.scales.yAxes[0].ticks.max = Math.ceil((max+increment));
-          this.options.scales.yAxes[0].ticks.stepSize = this.options.scales.yAxes[0].ticks.max / 6;
-          
-          model.meterIntervals = route.store.query('meterInterval', {
-            filter: {
-              "meter.id": params.meterId,
-              readDate: "2018-08-03"
-            }
-          }).then(meterIntervals => {
-            meterIntervals.forEach(interval => {
-              console.log(interval.readDate)
-            })
-
-            return meterIntervals;
-          });
+          trimData(data[1]);
           
           this.update();
         }
