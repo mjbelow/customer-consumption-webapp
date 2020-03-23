@@ -2,33 +2,32 @@ body {
   margin: 0;
 }
 
-// .mdc-menu .mdc-menu-item span::after {
-//   content: "\00a0\00a0\00a0\00a0\00a0\00a0\00a0\00a0\00a0\00a0";
-// }
-
-// .mdc-menu {
-//   overflow: hidden;
-// }
-
 #chart_container {
   height: 400px;
 }
 
 #options_container {
   width: 350px;
-  margin: auto;
-}
+  margin: 32px auto;
 
-.options {
-  width: 175px;
-  float: left;
+  .mdc-card {
+    margin: 32px 0 16px;
+  }
+
+  .mdc-menu {
+    width: 100%;
+
+    .location {
+      background: #777;
+      color: #fff;
+      cursor: default;
+    }
+
+  }
+
 }
 
 .mdc-card {
-  margin: 32px auto 16px;
-
-  height: 350px;
-  width: 350px;
 
   &.standard {
     height: unset;

@@ -1,62 +1,40 @@
-{{#mdc-card class="standard"}}
-  <div class="content">
-    {{model.name}}
-
-    <div class="content">
-      <hr>
-      {{model.customerLocations.firstObject.location.address}}
-      <br>
-      {{model.customerLocations.firstObject.location.city}} {{model.customerLocations.firstObject.location.state}} {{model.customerLocations.firstObject.location.postalCode}}
-      <hr>
-    </div>
-  </div>
-{{/mdc-card}}
-
 <div id="options_container">
+  
+  {{#mdc-card class="standard"}}
+    <div class="content">
+      {{model.name}}
 
-  <div class="options">
-    <div>
-      Locations:
+      <div class="content">
+        <hr>
+        {{model.customerLocations.firstObject.location.address}}
+        <br>
+        {{model.customerLocations.firstObject.location.city}} {{model.customerLocations.firstObject.location.state}} {{model.customerLocations.firstObject.location.postalCode}}
+        <hr>
+      </div>
     </div>
-    {{#mdc-button click=(action (mut locations) true) style="outlined"}}
-      {{#mdc-button-label}}{{model.customerLocations.firstObject.location.address}}{{/mdc-button-label}}
-      {{mdc-button-icon "arrow_drop_down"}}
-    {{/mdc-button}}
+  {{/mdc-card}}
 
-    {{#mdc-menu open=locations anchorCorner="bottomLeft"}}
-      {{#mdc-menu-list}}
-        {{#each model.customerLocations as |locations|}}
-          {{#mdc-menu-item}}
-            {{#mdc-menu-item-text}}{{locations.location.address}}{{/mdc-menu-item-text}}
-          {{/mdc-menu-item}}
+
+  {{#mdc-button click=(action (mut meters) true) style="outlined"}}
+    {{#mdc-button-label}}Meters{{/mdc-button-label}}
+    {{mdc-button-icon "arrow_drop_down"}}
+  {{/mdc-button}}
+
+  {{#mdc-menu open=meters anchorCorner="bottomLeft"}}
+    {{#mdc-menu-list}}
+      {{#each model.customerLocations as |locations|}}
+        {{#mdc-menu-item class="location"}}
+          {{#mdc-menu-item-text}}{{locations.location.address}}{{/mdc-menu-item-text}}
+        {{/mdc-menu-item}}
+        {{#each locations.location.meterLocations as |meterLocations|}}
+          {{#mdc-menu-item-link-to "customers.customer.meter" meterLocations.meter.id}}
+            {{#mdc-menu-item-text}}{{meterLocations.meter.id}}{{/mdc-menu-item-text}}
+          {{/mdc-menu-item-link-to}}
           {{mdc-list-divider}}
         {{/each}}
-      {{/mdc-menu-list}}
-    {{/mdc-menu}}
-  </div>
-
-  <div class="options">
-    <div>
-      Meters:
-    </div>
-    {{#mdc-button click=(action (mut meters) true) style="outlined"}}
-      {{#mdc-button-label}}{{model.customerLocations.firstObject.location.meterLocations.firstObject.meter.id}}{{/mdc-button-label}}
-      {{mdc-button-icon "arrow_drop_down"}}
-    {{/mdc-button}}
-
-    {{#mdc-menu open=meters anchorCorner="bottomLeft"}}
-      {{#mdc-menu-list}}
-        {{#each model.customerLocations as |locations|}}
-          {{#each locations.location.meterLocations as |meterLocations|}}
-            {{#mdc-menu-item-link-to "customers.customer.meter" meterLocations.meter.id}}
-              {{#mdc-menu-item-text}}{{meterLocations.meter.id}}{{/mdc-menu-item-text}}
-            {{/mdc-menu-item-link-to}}
-            {{mdc-list-divider}}
-          {{/each}}
-        {{/each}}
-      {{/mdc-menu-list}}
-    {{/mdc-menu}}
-  </div>
+      {{/each}}
+    {{/mdc-menu-list}}
+  {{/mdc-menu}}
 
 </div>
 
