@@ -25,7 +25,8 @@ export default Route.extend({
       }),
       weather: this.store.query('weather', {
         filter: {
-          readdatetime: range
+          readdatetime: range,
+          dataTypeId: "TEMPERATURE"
         },
         sort: "readdatetime"
       })
