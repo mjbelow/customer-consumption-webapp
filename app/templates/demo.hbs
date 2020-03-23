@@ -170,3 +170,26 @@
   </ul>
 
 {{/each}}
+
+<hr>
+
+<h1>weather ({{model.weather.length}})</h1>
+
+{{#each model.weather as |weather|}}
+
+  <ul>
+
+    <li><b>id</b>: {{weather.id}}</li>
+    <li><b>stationId</b>: {{weather.stationId}}</li>
+    <li><b>dataTypeId</b>: {{weather.dataTypeId}}</li>
+    <li><b>readDate</b>: {{weather.readDate}}</li>
+    <li><b>readHour</b>: {{weather.readHour}}</li>
+    <li><b>readDateTime</b>: {{weather.readDateTime}}</li>
+    <li><b>value</b>: {{weather.value}}</li>
+    <li><b>uom</b>: {{weather.uom}}</li>
+    <li><b>alphaValue</b>: {{weather.alphaValue}}</li>
+    <li><b>qualityCode</b>: {{weather.qualityCode}}</li>
+
+  </ul>
+
+{{/each}}
