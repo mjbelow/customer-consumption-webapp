@@ -1,15 +1,17 @@
 <div id="options_container">
-  
+
   {{#mdc-card class="standard"}}
     <div class="content">
       {{model.name}}
 
       <div class="content">
         <hr>
-        {{model.customerLocations.firstObject.location.address}}
-        <br>
-        {{model.customerLocations.firstObject.location.city}} {{model.customerLocations.firstObject.location.state}} {{model.customerLocations.firstObject.location.postalCode}}
-        <hr>
+        {{#each model.customerLocations as |locations|}}
+          {{locations.location.address}}
+          <br>
+          {{locations.location.city}} {{locations.location.state}} {{locations.location.postalCode}}
+          <hr>
+        {{/each}}
       </div>
     </div>
   {{/mdc-card}}
@@ -28,7 +30,7 @@
         {{/mdc-menu-item}}
         {{#each locations.location.meterLocations as |meterLocations|}}
           {{#mdc-menu-item-link-to "customers.customer.meter" meterLocations.meter.id}}
-            {{#mdc-menu-item-text}}{{meterLocations.meter.id}}{{/mdc-menu-item-text}}
+            {{#mdc-menu-item-text}}{{meterLocations.meter.id}} - {{meterLocations.meter.serviceType}}{{/mdc-menu-item-text}}
           {{/mdc-menu-item-link-to}}
           {{mdc-list-divider}}
         {{/each}}
