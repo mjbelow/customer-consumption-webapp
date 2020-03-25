@@ -1,5 +1,22 @@
-<hr>
-{{mdc-button-linkto "Index" "index" style="raised"}}
-{{mdc-button-linkto "Data" "demo" style="raised"}}
-{{mdc-button-linkto "Meters" "meters" style="raised"}}
-{{outlet}}
+{{#mdc-top-app-bar style="fixed"}}
+  {{#mdc-top-app-bar-row}}
+  
+    {{#mdc-top-app-bar-section}}
+      {{#mdc-top-app-bar-title}}KUB{{/mdc-top-app-bar-title}}
+    {{/mdc-top-app-bar-section}}
+
+    {{#mdc-top-app-bar-section position="alignEnd" role="toolbar"}}
+      {{#link-to "customers"}}
+        {{mdc-top-app-bar-action-item label="Customers" alt="Customers" icon="person"}}
+      {{/link-to}}
+      {{#link-to "demo"}}
+        {{mdc-top-app-bar-action-item label="Data" alt="Data" icon="folder_open"}}
+      {{/link-to}}
+    {{/mdc-top-app-bar-section}}
+
+  {{/mdc-top-app-bar-row}}
+{{/mdc-top-app-bar}}
+
+{{#mdc-content}}
+  {{outlet}}
+{{/mdc-content}}

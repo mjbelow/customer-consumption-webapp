@@ -1,0 +1,43 @@
+<div id="options_container">
+
+  {{#mdc-card class="standard"}}
+    <div class="content">
+      {{model.name}}
+
+      <div class="content">
+        <hr>
+        {{#each model.customerLocations as |locations|}}
+          {{locations.location.address}}
+          <br>
+          {{locations.location.city}} {{locations.location.state}} {{locations.location.postalCode}}
+          <hr>
+        {{/each}}
+      </div>
+    </div>
+  {{/mdc-card}}
+
+
+  {{#mdc-button click=(action (mut meters) true) style="outlined"}}
+    {{#mdc-button-label}}Meters{{/mdc-button-label}}
+    {{mdc-button-icon "arrow_drop_down"}}
+  {{/mdc-button}}
+
+  {{#mdc-menu open=meters anchorCorner="bottomLeft"}}
+    {{#mdc-menu-list}}
+      {{#each model.customerLocations as |locations|}}
+        {{#mdc-menu-item class="location"}}
+          {{#mdc-menu-item-text}}{{locations.location.address}}{{/mdc-menu-item-text}}
+        {{/mdc-menu-item}}
+        {{#each locations.location.meterLocations as |meterLocations|}}
+          {{#mdc-menu-item-link-to "customers.customer.meter" meterLocations.meter.id}}
+            {{#mdc-menu-item-text}}{{meterLocations.meter.id}} - {{meterLocations.meter.serviceType}}{{/mdc-menu-item-text}}
+          {{/mdc-menu-item-link-to}}
+          {{mdc-list-divider}}
+        {{/each}}
+      {{/each}}
+    {{/mdc-menu-list}}
+  {{/mdc-menu}}
+
+</div>
+
+{{outlet}}

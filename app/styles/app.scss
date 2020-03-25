@@ -1,0 +1,73 @@
+body {
+  margin: 0;
+}
+
+#chart_container {
+  height: 400px;
+}
+
+#options_container {
+  width: 350px;
+  margin: 32px auto;
+
+  .mdc-card {
+    margin: 32px 0 16px;
+  }
+
+  .mdc-menu {
+    width: 100%;
+
+    .location {
+      background: #777;
+      color: #fff;
+      cursor: default;
+    }
+
+  }
+
+}
+
+.mdc-card {
+
+  &.standard {
+    height: unset;
+
+    .content {
+      padding: 16px;
+    }
+  }
+
+  &.actionable {
+
+    .mdc-card__primary-action {
+      height: 50%;
+
+      display: flex;
+      flex-direction: row;
+
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
+  &.media {
+    height: unset;
+
+    background: url(images/seascape.jpg) no-repeat center center;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+
+    color: #fff;
+    padding: 16px;
+  }
+
+  &.full-bleed {
+    height: unset;
+
+    padding: 16px;
+
+
+  }
+}
