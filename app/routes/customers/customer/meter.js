@@ -7,25 +7,39 @@ export default Route.extend({
   model(params) {
     this.set('params',params);
 
-    let date = new Date("2019/8/23");
-    let tomorrow = new Date(date);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    // current day
+    let currentDay = new Date("8/23/2019");
+    currentDay.setHours(0,0,0,0);
+    
+    // next day
+    let nextDay = new Date(currentDay);
+    nextDay.setDate(nextDay.getDate() + 1);
 
-    let range = [`ge:${date.toLocaleDateString()}`, `lt:${tomorrow.toLocaleDateString()}`];
+    // current month
+    let currentMonth = new Date(currentDay);
+    currentMonth.setDate(1);
+
+    // next month
+    let nextMonth = new Date(currentMonth);
+    nextMonth.setMonth(nextMonth.getMonth()+1);
+
+    let dayRange = `ge:${currentDay.toLocaleDateString()},lt:${nextDay.toLocaleDateString()}`;
+    let monthRange = `ge:${currentMonth.toLocaleDateString()},lt:${nextMonth.toLocaleDateString()}`;
+
 
     return hash({
       meter: this.store.findRecord('meter', params.meterId),
       meterIntervals: this.store.query('meterInterval', {
         filter: {
           "meter.id": params.meterId,
-          readdatetime: range,
+          readdatetime: monthRange,
           channelId: 1
         },
         sort: "readdatetime"
       }),
       weather: this.store.query('weather', {
         filter: {
-          readdatetime: range,
+          readdatetime: monthRange,
           dataTypeId: "TEMPERATURE"
         },
         sort: "readdatetime"
@@ -41,23 +55,91 @@ export default Route.extend({
 
     Chart.defaults.scale.gridLines.display = false;
 
+    let labels = [];
+
+
+    const arrSum = arr => arr.reduce((a,b) => a + b, 0);
+    const arrAvg = arr => arr.reduce((a,b) => a + b, 0) / arr.length;
+
     // get temperature data
     let temperatureData = [];
+
+    // keep track of date in order to aggregate data
+    let prevDate = model.weather.firstObject.get("readDateTime");
+    // set prevDate to midnight
+    prevDate.setHours(0,0,0,0);
+
+    // keep track of data to aggregate
+    let dataValues = [];
+
     model.weather.forEach(data => {
-      temperatureData.push(data.get('value'));
+
+      let nextDate = data.get('readDateTime');
+      nextDate.setHours(0,0,0,0);
+
+      if(prevDate.getTime() == nextDate.getTime() && model.weather.lastObject.get("id") != data.get("id"))
+      {
+        dataValues.push(data.get('value'));
+      }
+      else
+      {
+        if(model.weather.lastObject.get("id") == data.get("id"))
+        {
+          dataValues.push(data.get('value'));
+        }
+
+        labels.push(prevDate.toLocaleDateString());
+        prevDate = nextDate;
+
+        temperatureData.push(arrAvg(dataValues));
+        
+        dataValues = [];
+        dataValues.push(data.get('value'));
+      }
+
     })
+
+
+    // reset prevDate to new data set
+    prevDate = model.weather.firstObject.get("readDateTime");
+    prevDate.setHours(0,0,0,0);
+    
+    // reset data values
+    dataValues = [];
 
     // get meter data
     let meterData = [];
     model.meterIntervals.forEach(data => {
-      meterData.push(data.get('readValue'))
+
+      let nextDate = data.get('readDateTime');
+      nextDate.setHours(0,0,0,0);
+
+      if(prevDate.getTime() == nextDate.getTime() && model.meterIntervals.lastObject.get("id") != data.get("id"))
+      {
+        dataValues.push(data.get('readValue'));
+      }
+      else
+      {
+        if(model.meterIntervals.lastObject.get("id") == data.get("id"))
+        {
+          dataValues.push(data.get('readValue'));
+        }
+
+        prevDate = nextDate;
+        meterData.push(arrSum(dataValues));
+
+        dataValues = [];
+        dataValues.push(data.get('readValue'));
+      }
+
     })
 
     // prevent data points from going above/below a max/min, but still retain original data
     function trimData(arr, min, max) {
       let i;
+      let length = arr[0].length;
       arr[1].length = 0;
-      for(i = 0; i < 24; i++)
+      for(i = 0; i < length; i++)
       {
         arr[1][i] = (typeof min !== 'undefined') && (arr[0][i] < min) ? min : (typeof max !== 'undefined') && (arr[0][i] > max) ? max : arr[0][i];
       }
@@ -85,16 +167,7 @@ export default Route.extend({
 
     
     let chartData = {
-      labels: [
-        '12:00am', '1:00am',  '2:00am',
-        '3:00am',  '4:00am',  '5:00am',
-        '6:00am',  '7:00am',  '8:00am',
-        '9:00am',  '10:00am', '11:00am',
-        '12:00pm', '1:00pm',  '2:00pm',
-        '3:00pm',  '4:00pm',  '5:00pm',
-        '6:00pm',  '7:00pm',  '8:00pm',
-        '9:00pm',  '10:00pm', '11:00pm'
-      ],
+      labels: labels,
       datasets: [{
         yAxisID: 'temperature',
         label: 'Temperature (F°)',
@@ -135,7 +208,8 @@ export default Route.extend({
             if(context.datasetIndex == 0)
               return false;
             return true;
-          }
+          },
+          backgroundColor: 'rgba(255,255,255,0.75)'
         }
       },
       tooltips: {
