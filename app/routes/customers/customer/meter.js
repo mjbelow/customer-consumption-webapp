@@ -8,31 +8,62 @@ export default Route.extend({
     this.set('params',params);
 
     // current day
-    let currentDay = new Date("8/23/2019");
+    let currentDay = new Date("10/23/2019");
     currentDay.setHours(0,0,0,0);
     
     // next day
     let nextDay = new Date(currentDay);
     nextDay.setDate(nextDay.getDate() + 1);
+    
+    let monthCount = 3;
 
     // current month
     let currentMonth = new Date(currentDay);
     currentMonth.setDate(1);
-
+    currentMonth.setMonth(currentMonth.getMonth() - monthCount + 1);
+    
     // next month
     let nextMonth = new Date(currentMonth);
-    nextMonth.setMonth(nextMonth.getMonth()+1);
+    nextMonth.setMonth(nextMonth.getMonth() + monthCount);
+    
+    // current month (previous year)
+    let currentMonthPrevious = new Date(currentMonth);
+    currentMonthPrevious.setFullYear(currentMonthPrevious.getFullYear() - 1);
+
+    
+    // next month (previous year)
+    let nextMonthPrevious = new Date(currentMonthPrevious);
+    nextMonthPrevious.setMonth(nextMonthPrevious.getMonth() + monthCount);
 
     let dayRange = `ge:${currentDay.toLocaleDateString()},lt:${nextDay.toLocaleDateString()}`;
     let monthRange = `ge:${currentMonth.toLocaleDateString()},lt:${nextMonth.toLocaleDateString()}`;
+    let monthRangePrevious = `ge:${currentMonthPrevious.toLocaleDateString()},lt:${nextMonthPrevious.toLocaleDateString()}`;
 
+    let months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+    let labels = [];
+
+    for(let i = 0; i < monthCount; i++)
+    {
+      labels.push(months[(currentMonth.getMonth() + i) % 12]);
+    }
+
+    this.set('labels',labels)
 
     return hash({
       meter: this.store.findRecord('meter', params.meterId),
-      meterIntervals: this.store.query('meterInterval', {
+      monthlyMeterIntervals: this.store.query('meterInterval', {
         filter: {
           "meter.id": params.meterId,
           readdatetime: monthRange,
+          channelId: 1
+        },
+        sort: "readdatetime"
+      }),
+      monthlyMeterIntervalsPrevious: this.store.query('meterInterval', {
+        filter: {
+          "meter.id": params.meterId,
+          readdatetime: monthRangePrevious,
           channelId: 1
         },
         sort: "readdatetime"
@@ -52,56 +83,25 @@ export default Route.extend({
 
     let route = this;
     let params = this.get('params');
+    let labels = this.get('labels');
 
     Chart.defaults.scale.gridLines.display = false;
 
-    let labels = [];
-
-
+    // aggregating functions
     const arrSum = arr => arr.reduce((a,b) => a + b, 0);
     const arrAvg = arr => arr.reduce((a,b) => a + b, 0) / arr.length;
 
     // get temperature data
     let temperatureData = [];
-
-    // keep track of date in order to aggregate data
-    let prevDate = model.weather.firstObject.get("readDateTime");
-    // set prevDate to midnight
-    prevDate.setHours(0,0,0,0);
-
+    
     // keep track of data to aggregate
     let dataValues = [];
-
-    model.weather.forEach(data => {
-
-      let nextDate = data.get('readDateTime');
-      nextDate.setHours(0,0,0,0);
-
-      if(prevDate.getTime() == nextDate.getTime() && model.weather.lastObject.get("id") != data.get("id"))
-      {
-        dataValues.push(data.get('value'));
-      }
-      else
-      {
-        if(model.weather.lastObject.get("id") == data.get("id"))
-        {
-          dataValues.push(data.get('value'));
-        }
-
-        labels.push(prevDate.toLocaleDateString());
-        prevDate = nextDate;
-
-        temperatureData.push(arrAvg(dataValues));
-        
-        dataValues = [];
-        dataValues.push(data.get('value'));
-      }
-
-    })
-
-
-    // reset prevDate to new data set
-    prevDate = model.weather.firstObject.get("readDateTime");
+    
+    // keep track of date in order to aggregate data
+    let prevDate = model.monthlyMeterIntervals.firstObject.get("readDateTime");
+    // set prevDate to first day of month
+    prevDate.setDate(1);
+    // set prevDate to midnight
     prevDate.setHours(0,0,0,0);
     
     // reset data values
@@ -109,29 +109,66 @@ export default Route.extend({
 
     // get meter data
     let meterData = [];
-    model.meterIntervals.forEach(data => {
+    let meterDataPrevious = [];
+    
+    model.monthlyMeterIntervals.forEach(data => {
 
       let nextDate = data.get('readDateTime');
+      nextDate.setDate(1);
       nextDate.setHours(0,0,0,0);
 
-      if(prevDate.getTime() == nextDate.getTime() && model.meterIntervals.lastObject.get("id") != data.get("id"))
+      if(prevDate.getTime() == nextDate.getTime() && model.monthlyMeterIntervals.lastObject.get("id") != data.get("id"))
       {
         dataValues.push(data.get('readValue'));
       }
       else
       {
-        if(model.meterIntervals.lastObject.get("id") == data.get("id"))
+        if(model.monthlyMeterIntervals.lastObject.get("id") == data.get("id"))
         {
           dataValues.push(data.get('readValue'));
         }
 
         prevDate = nextDate;
         meterData.push(arrSum(dataValues));
-
+        
         dataValues = [];
         dataValues.push(data.get('readValue'));
       }
+      
+    })
 
+    // reset prevDate to new data set
+    prevDate = model.monthlyMeterIntervalsPrevious.firstObject.get("readDateTime");
+    prevDate.setDate(1);
+    prevDate.setHours(0,0,0,0);
+    
+    // reset data values
+    dataValues = [];
+    
+    model.monthlyMeterIntervalsPrevious.forEach(data => {
+
+      let nextDate = data.get('readDateTime');
+      nextDate.setDate(1);
+      nextDate.setHours(0,0,0,0);
+
+      if(prevDate.getTime() == nextDate.getTime() && model.monthlyMeterIntervalsPrevious.lastObject.get("id") != data.get("id"))
+      {
+        dataValues.push(data.get('readValue'));
+      }
+      else
+      {
+        if(model.monthlyMeterIntervalsPrevious.lastObject.get("id") == data.get("id"))
+        {
+          dataValues.push(data.get('readValue'));
+        }
+
+        prevDate = nextDate;
+        meterDataPrevious.push(arrSum(dataValues));
+        
+        dataValues = [];
+        dataValues.push(data.get('readValue'));
+      }
+      
     })
 
     // prevent data points from going above/below a max/min, but still retain original data
@@ -159,11 +196,13 @@ export default Route.extend({
       // temperature data
       [temperatureData,[]],
       // meter data
+      [meterDataPrevious,[]],
       [meterData,[]],
     ]
 
     trimData(data[0], 0, 100);
     trimData(data[1]);
+    trimData(data[2]);
 
     
     let chartData = {
@@ -187,6 +226,15 @@ export default Route.extend({
         yAxisID: 'meter',
         label: `${model.meter.serviceType} (${model.meter.channel1RawUom})`,
         data: data[1][1],
+        backgroundColor:  'hsla(220,0%,61%,0.2)',
+        borderColor: 'hsla(220,0%,61%,1)',
+        borderWidth: 1,
+        hoverBorderWidth: 4,
+        type: 'bar'
+      },{
+        yAxisID: 'meter',
+        label: `${model.meter.serviceType} (${model.meter.channel1RawUom})`,
+        data: data[2][1],
         backgroundColor:  'hsla(220,100%,61%,0.2)',
         borderColor: 'hsla(220,100%,61%,1)',
         borderWidth: 1,
@@ -286,7 +334,8 @@ export default Route.extend({
           data[activePoints[0]['_datasetIndex']][0][idx] = Number(data[activePoints[0]['_datasetIndex']][0][idx]) + 1;
           trimData(data[0], 0, 100);
           trimData(data[1]);
-          
+          trimData(data[2]);
+
           this.update();
         }
 
