@@ -48,7 +48,9 @@ export default Route.extend({
       labels.push(months[(currentMonth.getMonth() + i) % 12]);
     }
 
-    this.set('labels',labels)
+    this.set('labels',labels);
+    this.set('currentYear',currentMonth.getFullYear());
+    this.set('previousYear',currentMonthPrevious.getFullYear());
 
     return hash({
       meter: this.store.findRecord('meter', params.meterId),
@@ -224,7 +226,7 @@ export default Route.extend({
         spanGaps: true
       },{
         yAxisID: 'meter',
-        label: `${model.meter.serviceType} (${model.meter.channel1RawUom})`,
+        label: `${model.meter.serviceType} (${this.get('previousYear')})`,
         data: data[1][1],
         backgroundColor:  'hsla(220,0%,61%,0.2)',
         borderColor: 'hsla(220,0%,61%,1)',
@@ -233,7 +235,7 @@ export default Route.extend({
         type: 'bar'
       },{
         yAxisID: 'meter',
-        label: `${model.meter.serviceType} (${model.meter.channel1RawUom})`,
+        label: `${model.meter.serviceType} (${this.get('currentYear')})`,
         data: data[2][1],
         backgroundColor:  'hsla(220,100%,61%,0.2)',
         borderColor: 'hsla(220,100%,61%,1)',
