@@ -8,14 +8,14 @@ export default Route.extend({
     this.set('params',params);
 
     // current day
-    let currentDay = new Date("10/23/2019");
+    let currentDay = new Date("6/23/2019");
     currentDay.setHours(0,0,0,0);
     
     // next day
     let nextDay = new Date(currentDay);
     nextDay.setDate(nextDay.getDate() + 1);
     
-    let monthCount = 3;
+    let monthCount = 1;
 
     // current month
     let currentMonth = new Date(currentDay);
@@ -95,83 +95,91 @@ export default Route.extend({
 
     // get temperature data
     let temperatureData = [];
-    
-    // keep track of data to aggregate
-    let dataValues = [];
-    
-    // keep track of date in order to aggregate data
-    let prevDate = model.monthlyMeterIntervals.firstObject.get("readDateTime");
-    // set prevDate to first day of month
-    prevDate.setDate(1);
-    // set prevDate to midnight
-    prevDate.setHours(0,0,0,0);
-    
-    // reset data values
-    dataValues = [];
 
     // get meter data
     let meterData = [];
     let meterDataPrevious = [];
     
-    model.monthlyMeterIntervals.forEach(data => {
+    // keep track of data to aggregate
+    let dataValues = [];
+    
+    if(model.monthlyMeterIntervals.firstObject)
+    {
+      // keep track of date in order to aggregate data
+      let prevDate = model.monthlyMeterIntervals.firstObject.get("readDateTime");
+      // set prevDate to first day of month
+      prevDate.setDate(1);
+      // set prevDate to midnight
+      prevDate.setHours(0,0,0,0);
+      
+      // reset data values
+      dataValues = [];
+      
+      model.monthlyMeterIntervals.forEach(data => {
 
-      let nextDate = data.get('readDateTime');
-      nextDate.setDate(1);
-      nextDate.setHours(0,0,0,0);
+        let nextDate = data.get('readDateTime');
+        nextDate.setDate(1);
+        nextDate.setHours(0,0,0,0);
 
-      if(prevDate.getTime() == nextDate.getTime() && model.monthlyMeterIntervals.lastObject.get("id") != data.get("id"))
-      {
-        dataValues.push(data.get('readValue'));
-      }
-      else
-      {
-        if(model.monthlyMeterIntervals.lastObject.get("id") == data.get("id"))
+        if(prevDate.getTime() == nextDate.getTime() && model.monthlyMeterIntervals.lastObject.get("id") != data.get("id"))
         {
           dataValues.push(data.get('readValue'));
         }
+        else
+        {
+          if(model.monthlyMeterIntervals.lastObject.get("id") == data.get("id"))
+          {
+            dataValues.push(data.get('readValue'));
+          }
 
-        prevDate = nextDate;
-        meterData.push(arrSum(dataValues));
+          prevDate = nextDate;
+          meterData.push(arrSum(dataValues));
+          
+          dataValues = [];
+          dataValues.push(data.get('readValue'));
+        }
         
-        dataValues = [];
-        dataValues.push(data.get('readValue'));
-      }
+      })
+    }
+
+    if(model.monthlyMeterIntervalsPrevious.firstObject)
+    {
+      // keep track of date in order to aggregate data
+      let prevDate = model.monthlyMeterIntervalsPrevious.firstObject.get("readDateTime");
+      // set prevDate to first day of month
+      prevDate.setDate(1);
+      // set prevDate to midnight
+      prevDate.setHours(0,0,0,0);
       
-    })
+      // reset data values
+      dataValues = [];
+      
+      model.monthlyMeterIntervalsPrevious.forEach(data => {
 
-    // reset prevDate to new data set
-    prevDate = model.monthlyMeterIntervalsPrevious.firstObject.get("readDateTime");
-    prevDate.setDate(1);
-    prevDate.setHours(0,0,0,0);
-    
-    // reset data values
-    dataValues = [];
-    
-    model.monthlyMeterIntervalsPrevious.forEach(data => {
+        let nextDate = data.get('readDateTime');
+        nextDate.setDate(1);
+        nextDate.setHours(0,0,0,0);
 
-      let nextDate = data.get('readDateTime');
-      nextDate.setDate(1);
-      nextDate.setHours(0,0,0,0);
-
-      if(prevDate.getTime() == nextDate.getTime() && model.monthlyMeterIntervalsPrevious.lastObject.get("id") != data.get("id"))
-      {
-        dataValues.push(data.get('readValue'));
-      }
-      else
-      {
-        if(model.monthlyMeterIntervalsPrevious.lastObject.get("id") == data.get("id"))
+        if(prevDate.getTime() == nextDate.getTime() && model.monthlyMeterIntervalsPrevious.lastObject.get("id") != data.get("id"))
         {
           dataValues.push(data.get('readValue'));
         }
+        else
+        {
+          if(model.monthlyMeterIntervalsPrevious.lastObject.get("id") == data.get("id"))
+          {
+            dataValues.push(data.get('readValue'));
+          }
 
-        prevDate = nextDate;
-        meterDataPrevious.push(arrSum(dataValues));
+          prevDate = nextDate;
+          meterDataPrevious.push(arrSum(dataValues));
+          
+          dataValues = [];
+          dataValues.push(data.get('readValue'));
+        }
         
-        dataValues = [];
-        dataValues.push(data.get('readValue'));
-      }
-      
-    })
+      })
+    }
 
     // prevent data points from going above/below a max/min, but still retain original data
     function trimData(arr, min, max) {
