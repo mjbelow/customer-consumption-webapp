@@ -29,10 +29,13 @@
           {{#mdc-menu-item-text}}{{locations.location.address}}{{/mdc-menu-item-text}}
         {{/mdc-menu-item}}
         {{#each locations.location.meterLocations as |meterLocations|}}
-          {{#mdc-menu-item-link-to "customers.customer.meter" meterLocations.meter.id}}
-            {{#mdc-menu-item-text}}{{meterLocations.meter.id}} - {{meterLocations.meter.serviceType}}{{/mdc-menu-item-text}}
-          {{/mdc-menu-item-link-to}}
-          {{mdc-list-divider}}
+          {{!-- only show meters that are active --}}
+          {{#if meterLocations.active}}
+            {{#mdc-menu-item-link-to "customers.customer.meter" meterLocations.meter.id}}
+              {{#mdc-menu-item-text}}{{meterLocations.meter.id}} - {{meterLocations.meter.serviceType}}{{/mdc-menu-item-text}}
+            {{/mdc-menu-item-link-to}}
+            {{mdc-list-divider}}
+          {{/if}}
         {{/each}}
       {{/each}}
     {{/mdc-menu-list}}
