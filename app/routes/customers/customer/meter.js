@@ -484,6 +484,10 @@ export default Route.extend({
 
               }
 
+              // update chart with no data so transition to new data doesn't look strange (occurs when increasing the amount of labels)
+              data[dataset][1].length = 0;
+              chart.update();
+
               data[0][0] = dailyWeatherData;
               data[dataset][0] = dailyMeterIntervalData;
               trimData(data[0], 0, 100);
@@ -493,8 +497,7 @@ export default Route.extend({
               chart.getDatasetMeta(3 - dataset).hidden = true;
               
               // clear data from other dataset (in case user clicks legend to display hidden dataset)
-              data[3 - dataset][0] = [];
-              trimData(data[3 - dataset]);
+              data[3 - dataset][1].length = 0;
 
               chart.update();
 
