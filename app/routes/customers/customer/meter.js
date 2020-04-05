@@ -304,30 +304,49 @@ export default Route.extend({
     }
 
     var data = [
-      // temperature data
+      // temperature data (previous)
       [weatherData[0][0],[]],
-      // meter data
+      // temperature data (current)
+      [weatherData[0][1],[]],
+      // meter data (previous)
       [meterIntervalData[0][0],[]],
+      // meter data (current)
       [meterIntervalData[0][1],[]],
     ]
 
     trimData(data[0], 0, 100);
-    trimData(data[1]);
+    trimData(data[1], 0, 100);
     trimData(data[2]);
+    trimData(data[3]);
 
     
     let chartData = {
       labels: labels[0],
       datasets: [{
         yAxisID: 'temperature',
-        label: 'Temperature (F°)',
+        label: `Temperature (${this.get('previousYear')})`,
         data: data[0][1],
-        borderColor: "#404040",
+        borderColor: 'hsla(220,0%,41%,.8)',
         borderWidth: 1,
         type: 'line',
         fill: false,
         lineTension: 0.5,
-        pointBackgroundColor: "#808080",
+        pointBackgroundColor: 'hsla(220,0%,41%,0.2)',
+        pointHoverBorderWidth: 2,
+        pointRadius: 5,
+        pointHitRadius: 5,
+        pointHoverRadius: 5,
+        spanGaps: true
+      },{
+        yAxisID: 'temperature',
+        label: `Temperature (${this.get('currentYear')})`,
+        data: data[1][1],
+        borderColor: 'hsla(220,100%,41%,.8)',
+        borderWidth: 1,
+        type: 'line',
+        fill: false,
+        lineTension: 0.5,
+        pointBackgroundColor: 'hsla(220,100%,41%,0.2)',
         pointHoverBorderWidth: 2,
         pointRadius: 5,
         pointHitRadius: 5,
@@ -336,7 +355,7 @@ export default Route.extend({
       },{
         yAxisID: 'meter',
         label: `${model.meter.serviceType} (${this.get('previousYear')})`,
-        data: data[1][1],
+        data: data[2][1],
         backgroundColor:  'hsla(220,0%,61%,0.2)',
         borderColor: 'hsla(220,0%,61%,1)',
         borderWidth: 1,
@@ -345,7 +364,7 @@ export default Route.extend({
       },{
         yAxisID: 'meter',
         label: `${model.meter.serviceType} (${this.get('currentYear')})`,
-        data: data[2][1],
+        data: data[3][1],
         backgroundColor:  'hsla(220,100%,61%,0.2)',
         borderColor: 'hsla(220,100%,61%,1)',
         borderWidth: 1,
@@ -363,8 +382,8 @@ export default Route.extend({
             return parseFloat(data[context.datasetIndex][0][context.dataIndex]).toFixed(2);
           },
           display: function(context) {
-            // hide the first dataset label (temperature)
-            if(context.datasetIndex == 0)
+            // hide the temperature labels
+            if(context.datasetIndex <= 1)
               return false;
             return true;
           },
@@ -378,7 +397,7 @@ export default Route.extend({
         //mode: 'dataset',
         callbacks: {
           label: function(tooltipItem) {
-            let uom = tooltipItem.datasetIndex === 0 ? 'F°' : model.meter.channel1RawUom;
+            let uom = tooltipItem.datasetIndex <= 1 ? 'F°' : model.meter.channel1RawUom;
             return `${parseFloat(data[tooltipItem.datasetIndex][0][tooltipItem.index]).toFixed(2)} ${uom}`;
           }
         }
