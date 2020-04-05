@@ -187,130 +187,100 @@ export default Route.extend({
     // keep track of data to aggregate
     let dataValues = [];
 
-    if(model.meterIntervalsPrevious.firstObject)
+
+    function aggregateData(model, dataArray, dataset, valueData, dateData, aggregateFunction)
     {
-      // keep track of day to aggregate daily data
-      // set prevDay to midnight
-      let prevDay = model.meterIntervalsPrevious.firstObject.get("readDateTime").setHours(0,0,0,0);
-      
-      // keep track of month to aggregate monthly data
-      // set prevMonth to first day of month
-      let prevMonth = new Date(prevDay).setDate(1);
-
-      // initialize month and day phase
-      let monthPhase = 0;
-      let dayPhase = 0;
-
-      // daily data
-      meterIntervalData[1][0].push([]);
-      // hourly data
-      meterIntervalData[2][0].push([[]]);
-      
-      model.meterIntervalsPrevious.forEach(data => {
-
-        let currentDay = data.get('readDateTime').setHours(0,0,0,0);
-
-        let currentMonth = new Date(currentDay).setDate(1);
-
-        let last = model.meterIntervalsPrevious.lastObject.get("id") == data.get("id");
-
-
-        if(last)
-        {          
-
-          // hourly data
-          meterIntervalData[2][0][monthPhase][dayPhase].push(data.get('readValue'));
-          // daily data
-          meterIntervalData[1][0][monthPhase].push(arrSum(meterIntervalData[2][0][monthPhase][dayPhase]));
-          // monthly data
-          meterIntervalData[0][0].push(arrSum(meterIntervalData[1][0][monthPhase]));
-
-          console.log(meterIntervalData[0][0])
-          console.log(meterIntervalData[1][0])
-          console.log(meterIntervalData[2][0])
-
-        }
-        else
-        {
-          if(prevDay != currentDay)
-          {
-            prevDay = currentDay;
-
-            
+      if(model.firstObject)
+      {
+        // keep track of day to aggregate daily data
+        // set prevDay to midnight
+        let prevDay = model.firstObject.get(dateData).setHours(0,0,0,0);
+        
+        // keep track of month to aggregate monthly data
+        // set prevMonth to first day of month
+        let prevMonth = new Date(prevDay).setDate(1);
+  
+        // initialize month and day phase
+        let monthPhase = 0;
+        let dayPhase = 0;
+  
+        // daily data
+        dataArray[1][dataset].push([]);
+        // hourly data
+        dataArray[2][dataset].push([[]]);
+        
+        model.forEach(data => {
+  
+          let currentDay = data.get(dateData).setHours(0,0,0,0);
+  
+          let currentMonth = new Date(currentDay).setDate(1);
+  
+          let last = model.lastObject.get("id") == data.get("id");
+  
+  
+          if(last)
+          {          
+  
+            // hourly data
+            dataArray[2][dataset][monthPhase][dayPhase].push(data.get(valueData));
             // daily data
-            meterIntervalData[1][0][monthPhase].push(arrSum(meterIntervalData[2][0][monthPhase][dayPhase]));
-            // hourly data
-            meterIntervalData[2][0][monthPhase].push([]);
-            
-            
-            dayPhase++;
-          }
-          
-          if(prevMonth != currentMonth)
-          {
-            prevMonth = currentMonth;
-            
-            
-            // hourly data
-            meterIntervalData[2][0][monthPhase].pop();
-            dayPhase = 0;
-            
-            
+            dataArray[1][dataset][monthPhase].push(aggregateFunction(dataArray[2][dataset][monthPhase][dayPhase]));
             // monthly data
-            meterIntervalData[0][0].push(arrSum(meterIntervalData[1][0][monthPhase]));
-            // daily data
-            meterIntervalData[1][0].push([]);
-            // hourly data
-            meterIntervalData[2][0].push([[]]);
-            
-            
-            monthPhase++;
+            dataArray[0][dataset].push(aggregateFunction(dataArray[1][dataset][monthPhase]));
+  
+            console.log(dataArray[0][dataset])
+            console.log(dataArray[1][dataset])
+            console.log(dataArray[2][dataset])
+  
           }
-          
-          meterIntervalData[2][0][monthPhase][dayPhase].push(data.get('readValue'));
-        }
-        
-      })
-    }
-
-    if(model.meterIntervals.firstObject)
-    {
-      // keep track of date in order to aggregate data
-      let prevDate = model.meterIntervals.firstObject.get("readDateTime");
-      // set prevDate to first day of month
-      prevDate.setDate(1);
-      // set prevDate to midnight
-      prevDate.setHours(0,0,0,0);
-      
-      // reset data values
-      dataValues = [];
-      
-      model.meterIntervals.forEach(data => {
-
-        let nextDate = data.get('readDateTime');
-        nextDate.setDate(1);
-        nextDate.setHours(0,0,0,0);
-
-        if(prevDate.getTime() == nextDate.getTime() && model.meterIntervals.lastObject.get("id") != data.get("id"))
-        {
-          dataValues.push(data.get('readValue'));
-        }
-        else
-        {
-          if(model.meterIntervals.lastObject.get("id") == data.get("id"))
+          else
           {
-            dataValues.push(data.get('readValue'));
+            if(prevDay != currentDay)
+            {
+              prevDay = currentDay;
+  
+              
+              // daily data
+              dataArray[1][dataset][monthPhase].push(aggregateFunction(dataArray[2][dataset][monthPhase][dayPhase]));
+              // hourly data
+              dataArray[2][dataset][monthPhase].push([]);
+              
+              
+              dayPhase++;
+            }
+            
+            if(prevMonth != currentMonth)
+            {
+              prevMonth = currentMonth;
+              
+              
+              // hourly data
+              dataArray[2][dataset][monthPhase].pop();
+              dayPhase = 0;
+              
+              
+              // monthly data
+              dataArray[0][dataset].push(aggregateFunction(dataArray[1][dataset][monthPhase]));
+              // daily data
+              dataArray[1][dataset].push([]);
+              // hourly data
+              dataArray[2][dataset].push([[]]);
+              
+              
+              monthPhase++;
+            }
+            
+            dataArray[2][dataset][monthPhase][dayPhase].push(data.get(valueData));
           }
-
-          prevDate = nextDate;
-          meterIntervalData[0][1].push(arrSum(dataValues));
           
-          dataValues = [];
-          dataValues.push(data.get('readValue'));
-        }
-        
-      })
+        });
+      }
     }
+
+    aggregateData(model.meterIntervalsPrevious, meterIntervalData, 0, "readValue", "readDateTime", arrSum);
+    aggregateData(model.meterIntervals, meterIntervalData, 1, "readValue", "readDateTime", arrSum);
+    aggregateData(model.weatherPrevious, weatherData, 0, "value", "readDateTime", arrAvg);
+    aggregateData(model.weather, weatherData, 1, "value", "readDateTime", arrAvg);
 
     // prevent data points from going above/below a max/min, but still retain original data
     function trimData(arr, min, max) {
