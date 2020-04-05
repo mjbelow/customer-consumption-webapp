@@ -58,10 +58,7 @@ export default Route.extend({
     */
     let labels = [
       [],
-      [
-        [new Array(monthCount)],
-        [new Array(monthCount)]
-      ],
+      [[new Array(monthCount)]],
       [
         '12:00am', '1:00am',  '2:00am',
         '3:00am',  '4:00am',  '5:00am',
@@ -74,37 +71,40 @@ export default Route.extend({
       ]
     ];
 
+
+    function leapYear(year)
+    {
+      return ((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0);
+    }
+
     for(let i = 0; i < monthCount; i++)
     {
       // generate month labels
       labels[0].push(months[(currentMonth.getMonth() + i) % 12]);
-
-      // generate daily labels (previous year)
-      let currentMonthsPrevious = [new Date(currentMonthPrevious), new Date(currentMonthPrevious)];
-      currentMonthsPrevious[0].setMonth(currentMonthsPrevious[0].getMonth() + i);
-      currentMonthsPrevious[1].setMonth(currentMonthsPrevious[0].getMonth() + 1);
-
-      labels[1][0][i] = [];
       
-      while(currentMonthsPrevious[0].getTime() < currentMonthsPrevious[1].getTime())
+      let monthRange;
+
+      // use current year if it's a leap year, else use previous year (whether it's a leap year or not)
+      if(leapYear(currentMonth.getFullYear()))
       {
-        labels[1][0][i].push(currentMonthsPrevious[0].toLocaleDateString());
-        
-        currentMonthsPrevious[0].setDate(currentMonthsPrevious[0].getDate() + 1);
+        monthRange = [new Date(currentMonth), new Date(currentMonth)];
+      }
+      else
+      {
+        monthRange = [new Date(currentMonthPrevious), new Date(currentMonthPrevious)];
       }
 
-      // generate daily labels (current year)
-      let currentMonths = [new Date(currentMonth), new Date(currentMonth)];
-      currentMonths[0].setMonth(currentMonths[0].getMonth() + i);
-      currentMonths[1].setMonth(currentMonths[0].getMonth() + 1);
+      monthRange[0].setMonth(monthRange[0].getMonth() + i);
+      monthRange[1].setMonth(monthRange[0].getMonth() + 1);
       
-      labels[1][1][i] = [];
+      labels[1][i] = [];
       
-      while(currentMonths[0].getTime() < currentMonths[1].getTime())
+      // generate daily labels
+      while(monthRange[0].getTime() < monthRange[1].getTime())
       {
-        labels[1][1][i].push(currentMonths[0].toLocaleDateString());
+        labels[1][i].push(`${monthRange[0].getMonth()+1} / ${monthRange[0].getDate()}`);
         
-        currentMonths[0].setDate(currentMonths[0].getDate() + 1);
+        monthRange[0].setDate(monthRange[0].getDate() + 1);
       }
     }
 
@@ -184,8 +184,11 @@ export default Route.extend({
       [[],[]]
     ];
     
-    // keep track of data to aggregate
-    let dataValues = [];
+    // keep track of level (monthly, daily, hourly)
+    let level = 0;
+    let selectedYear = 0;
+    let selectedMonth = 0;
+    let selectedDay = 0;
 
 
     function aggregateData(model, dataArray, dataset, valueData, dateData, aggregateFunction)
@@ -466,172 +469,98 @@ export default Route.extend({
           let chart = this;
 
           // set dataset to meter's dataset if temperature dataset is clicked
+          // dataset 0 = temperature (previous)
+          // dataset 1 = temperature (current)
+          // dataset 2 = meter intervals (previous)
+          // dataset 3 = meter intervals (current)
           dataset = dataset <= 1 ? dataset + 2 : dataset;
 
-          // selected month
-          let selectedCurrentMonth = new Date(route.get('currentMonths')[3 - dataset]);
-          selectedCurrentMonth.setMonth(selectedCurrentMonth.getMonth() + idx);
+          selectedYear = dataset - 2;
 
-          // next month after selected month
-          let selectedNextMonth = new Date(selectedCurrentMonth);
-          selectedNextMonth.setMonth(selectedNextMonth.getMonth() + 1);
+          let prevLevel = level;
+          level = level < 2 ? level + 1 : level;
 
-          let selectedMonthRange = `ge:${selectedCurrentMonth.toLocaleDateString()},lt:${selectedNextMonth.toLocaleDateString()}`;
+          // update selectedMonth or selectedDay if level increases
+          // but don't update if level decreases (not yet implemented)
+          let levelIncreased = prevLevel < level;
 
-          let weatherInit = false;
-          let intervalsInit = false;
-
-          route.store.query('weather', {
-            filter: {
-              readdatetime: selectedMonthRange,
-              dataTypeId: "TEMPERATURE"
-            },
-            sort: "readdatetime"
-          }).then(data => {
-            model.dailyWeather = data;
-            weatherInit = true;
-          })
-
-          route.store.query('meterInterval', {
-            filter: {
-              "meter.id": params.meterId,
-              readdatetime: selectedMonthRange,
-              channelId: 1
-            },
-            sort: "readdatetime"
-          }).then(data => {
-            model.dailyMeterIntervals = data;
-            intervalsInit = true;
-          })
-
-          let loopCount = 0;
-
-          // keep looping until weather data and meter interval data is initialized
-          let loop = setInterval(function()
+          if(level === 1)
           {
-            console.log(++loopCount);
-            console.log(`weatherInit: ${weatherInit}`);
-            console.log(`intervalsInit: ${intervalsInit}`);
-
-            // retrieve weather data
-            if(weatherInit && intervalsInit)
+            if(levelIncreased)
             {
-              clearInterval(loop);
-
-              if(model.dailyWeather.firstObject)
-              {
-
-                labels[0].length = 0;
-
-                // keep track of date in order to aggregate data
-                let prevDate = model.dailyWeather.firstObject.get("readDateTime");
-                // set prevDate to midnight
-                prevDate.setHours(0,0,0,0);
-
-                // keep track of data to aggregate
-                let dataValues = [];
-
-                weatherData[dataset - 2][0] = [];
-
-                model.dailyWeather.forEach(data => {
-
-                  let nextDate = data.get('readDateTime');
-                  nextDate.setHours(0,0,0,0);
-            
-                  if(prevDate.getTime() == nextDate.getTime() && model.dailyWeather.lastObject.get("id") != data.get("id"))
-                  {
-                    dataValues.push(data.get('value'));
-                  }
-                  else
-                  {
-                    if(model.dailyWeather.lastObject.get("id") == data.get("id"))
-                    {
-                      dataValues.push(data.get('value'));
-                    }
-            
-                    labels[0].push(prevDate.toLocaleDateString());
-                    prevDate = nextDate;
-            
-                    weatherData[dataset - 2][0].push(arrAvg(dataValues));
-                    
-                    dataValues = [];
-                    dataValues.push(data.get('value'));
-                  }
-
-                  
-                })
-
-              }
-
-              // retrieve meter interval data
-              if(model.dailyMeterIntervals.firstObject)
-              {
-
-                // keep track of date in order to aggregate data
-                let prevDate = model.dailyMeterIntervals.firstObject.get("readDateTime");
-                // set prevDate to midnight
-                prevDate.setHours(0,0,0,0);
-
-                // keep track of data to aggregate
-                let dataValues = [];
-
-                meterIntervalData[1][0] = [];
-
-                model.dailyMeterIntervals.forEach(data => {
-
-                  let nextDate = data.get('readDateTime');
-                  nextDate.setHours(0,0,0,0);
-            
-                  if(prevDate.getTime() == nextDate.getTime() && model.dailyMeterIntervals.lastObject.get("id") != data.get("id"))
-                  {
-                    dataValues.push(data.get('readValue'));
-                  }
-                  else
-                  {
-                    if(model.dailyMeterIntervals.lastObject.get("id") == data.get("id"))
-                    {
-                      dataValues.push(data.get('readValue'));
-                    }
-
-                    prevDate = nextDate;
-            
-                    meterIntervalData[1][0].push(arrSum(dataValues));
-                    
-                    dataValues = [];
-                    dataValues.push(data.get('readValue'));
-                  }
-
-                  
-                })
-
-              }
-
-              // update chart with no data so transition to new data doesn't look strange (occurs when increasing the amount of labels)
-              // meter data
-              data[dataset][1].length = 0;
-              // temperature data
-              data[dataset - 2][1].length = 0;
-              chart.update();
-
-              data[dataset - 2][0] = weatherData[dataset - 2][0];
-              data[dataset][0] = meterIntervalData[1][0];
-              trimData(data[dataset - 2], 0, 100);
-              trimData(data[dataset]);
-              
-              // hide other datasets
-              chart.getDatasetMeta(3 - dataset).hidden = true;
-              chart.getDatasetMeta(5 - dataset).hidden = true;
-              
-              // clear data from other datasets (in case user clicks legend to display hidden dataset)
-              data[3 - dataset][1].length = 0;
-              data[5 - dataset][1].length = 0;
-
-              chart.update();
-
+              selectedMonth = idx;
             }
+            chartData.labels = labels[level][selectedMonth];
+          }
+          else
+          {
+            if(level === 2 && levelIncreased)
+            {
+              selectedDay = idx;
+            }
+            chartData.labels = labels[level];
+          }
 
-          }, 500);
-          
+          chart.update();
+
+          // update chart with no data so transition to new data doesn't look strange (occurs when increasing the amount of labels)
+          data[0][1].length = 0;
+          data[1][1].length = 0;
+          data[2][1].length = 0;
+          data[3][1].length = 0;
+
+          // hide other datasets
+          chart.getDatasetMeta(3 - dataset).hidden = true;
+          chart.getDatasetMeta(5 - dataset).hidden = true;
+
+          // show selected dataset (if hidden)
+          chart.getDatasetMeta(dataset - 2).hidden = false;
+          chart.getDatasetMeta(dataset).hidden = false;
+
+          chart.update();
+
+          // update chart with new data from current level
+          if(level === 0)
+          {
+            // temperature data (previous)
+            data[0][0] = weatherData[level][0];
+            // temperature data (current)
+            data[1][0] = weatherData[level][1];
+            // meter data (previous)
+            data[2][0] = meterIntervalData[level][0];
+            // meter data (current)
+            data[3][0] = meterIntervalData[level][1];
+          }
+          else if(level === 1)
+          {
+            // temperature data (previous)
+            data[0][0] = weatherData[level][0][selectedMonth];
+            // temperature data (current)
+            data[1][0] = weatherData[level][1][selectedMonth];
+            // meter data (previous)
+            data[2][0] = meterIntervalData[level][0][selectedMonth];
+            // meter data (current)
+            data[3][0] = meterIntervalData[level][1][selectedMonth];
+          }
+          else
+          {
+            // temperature data (previous)
+            data[0][0] = weatherData[level][0][selectedMonth][selectedDay];
+            // temperature data (current)
+            data[1][0] = weatherData[level][1][selectedMonth][selectedDay];
+            // meter data (previous)
+            data[2][0] = meterIntervalData[level][0][selectedMonth][selectedDay];
+            // meter data (current)
+            data[3][0] = meterIntervalData[level][1][selectedMonth][selectedDay];
+          }
+
+          trimData(data[0], 0, 100);
+          trimData(data[1], 0, 100);
+          trimData(data[2]);
+          trimData(data[3]);
+
+          chart.update();
+
         }
 
       }
