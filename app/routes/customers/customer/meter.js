@@ -42,11 +42,70 @@ export default Route.extend({
 
     let months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-    let labels = [];
+    /*
+    [monthly]
+    [daily]
+
+      [previous]
+
+        [],[],[]
+
+      [current]
+
+        [],[],[]
+
+    [hourly]
+    */
+    let labels = [
+      [],
+      [
+        [new Array(monthCount)],
+        [new Array(monthCount)]
+      ],
+      [
+        '12:00am', '1:00am',  '2:00am',
+        '3:00am',  '4:00am',  '5:00am',
+        '6:00am',  '7:00am',  '8:00am',
+        '9:00am',  '10:00am', '11:00am',
+        '12:00pm', '1:00pm',  '2:00pm',
+        '3:00pm',  '4:00pm',  '5:00pm',
+        '6:00pm',  '7:00pm',  '8:00pm',
+        '9:00pm',  '10:00pm', '11:00pm'
+      ]
+    ];
 
     for(let i = 0; i < monthCount; i++)
     {
-      labels.push(months[(currentMonth.getMonth() + i) % 12]);
+      // generate month labels
+      labels[0].push(months[(currentMonth.getMonth() + i) % 12]);
+
+      // generate daily labels (previous year)
+      let currentMonthsPrevious = [new Date(currentMonthPrevious), new Date(currentMonthPrevious)];
+      currentMonthsPrevious[0].setMonth(currentMonthsPrevious[0].getMonth() + i);
+      currentMonthsPrevious[1].setMonth(currentMonthsPrevious[0].getMonth() + 1);
+
+      labels[1][0][i] = [];
+      
+      while(currentMonthsPrevious[0].getTime() < currentMonthsPrevious[1].getTime())
+      {
+        labels[1][0][i].push(currentMonthsPrevious[0].toLocaleDateString());
+        
+        currentMonthsPrevious[0].setDate(currentMonthsPrevious[0].getDate() + 1);
+      }
+
+      // generate daily labels (current year)
+      let currentMonths = [new Date(currentMonth), new Date(currentMonth)];
+      currentMonths[0].setMonth(currentMonths[0].getMonth() + i);
+      currentMonths[1].setMonth(currentMonths[0].getMonth() + 1);
+      
+      labels[1][1][i] = [];
+      
+      while(currentMonths[0].getTime() < currentMonths[1].getTime())
+      {
+        labels[1][1][i].push(currentMonths[0].toLocaleDateString());
+        
+        currentMonths[0].setDate(currentMonths[0].getDate() + 1);
+      }
     }
 
     this.set('labels',labels);
@@ -55,7 +114,7 @@ export default Route.extend({
 
     return hash({
       meter: this.store.findRecord('meter', params.meterId),
-      monthlyMeterIntervals: this.store.query('meterInterval', {
+      meterIntervals: this.store.query('meterInterval', {
         filter: {
           "meter.id": params.meterId,
           readdatetime: monthRange,
@@ -63,11 +122,25 @@ export default Route.extend({
         },
         sort: "readdatetime"
       }),
-      monthlyMeterIntervalsPrevious: this.store.query('meterInterval', {
+      meterIntervalsPrevious: this.store.query('meterInterval', {
         filter: {
           "meter.id": params.meterId,
           readdatetime: monthRangePrevious,
           channelId: 1
+        },
+        sort: "readdatetime"
+      }),
+      weather: this.store.query('weather', {
+        filter: {
+          readdatetime: monthRange,
+          dataTypeId: "TEMPERATURE"
+        },
+        sort: "readdatetime"
+      }),
+      weatherPrevious: this.store.query('weather', {
+        filter: {
+          readdatetime: monthRangePrevious,
+          dataTypeId: "TEMPERATURE"
         },
         sort: "readdatetime"
       }),
@@ -92,61 +165,118 @@ export default Route.extend({
     const arrAvg = arr => arr.reduce((a,b) => a + b, 0) / arr.length;
 
     // get temperature data
-    let dailyWeatherData = [];
-    let hourlyWeatherData = [];
+    // [monthlyPrevious] [monthly]
+    // [dailyPrevious] [daily]
+    // [hourlyPrevious] [hourly]
+    let weatherData = [
+      [[],[]],
+      [[],[]],
+      [[],[]]
+    ];
 
     // get meter data
-    let monthlyMeterIntervalData = [];
-    let monthlyMeterIntervalDataPrevious = [];
-    let dailyMeterIntervalData = [];
-    let hourlyMeterIntervalData = [];
+    // [monthlyPrevious] [monthly]
+    // [dailyPrevious] [daily]
+    // [hourlyPrevious] [hourly]
+    let meterIntervalData = [
+      [[],[]],
+      [[],[]],
+      [[],[]]
+    ];
     
     // keep track of data to aggregate
     let dataValues = [];
-    
-    if(model.monthlyMeterIntervals.firstObject)
+
+    if(model.meterIntervalsPrevious.firstObject)
     {
-      // keep track of date in order to aggregate data
-      let prevDate = model.monthlyMeterIntervals.firstObject.get("readDateTime");
-      // set prevDate to first day of month
-      prevDate.setDate(1);
-      // set prevDate to midnight
-      prevDate.setHours(0,0,0,0);
+      // keep track of day to aggregate daily data
+      // set prevDay to midnight
+      let prevDay = model.meterIntervalsPrevious.firstObject.get("readDateTime").setHours(0,0,0,0);
       
-      // reset data values
-      dataValues = [];
+      // keep track of month to aggregate monthly data
+      // set prevMonth to first day of month
+      let prevMonth = new Date(prevDay).setDate(1);
+
+      // initialize month and day phase
+      let monthPhase = 0;
+      let dayPhase = 0;
+
+      // daily data
+      meterIntervalData[1][0].push([]);
+      // hourly data
+      meterIntervalData[2][0].push([[]]);
       
-      model.monthlyMeterIntervals.forEach(data => {
+      model.meterIntervalsPrevious.forEach(data => {
 
-        let nextDate = data.get('readDateTime');
-        nextDate.setDate(1);
-        nextDate.setHours(0,0,0,0);
+        let currentDay = data.get('readDateTime').setHours(0,0,0,0);
 
-        if(prevDate.getTime() == nextDate.getTime() && model.monthlyMeterIntervals.lastObject.get("id") != data.get("id"))
-        {
-          dataValues.push(data.get('readValue'));
+        let currentMonth = new Date(currentDay).setDate(1);
+
+        let last = model.meterIntervalsPrevious.lastObject.get("id") == data.get("id");
+
+
+        if(last)
+        {          
+
+          // hourly data
+          meterIntervalData[2][0][monthPhase][dayPhase].push(data.get('readValue'));
+          // daily data
+          meterIntervalData[1][0][monthPhase].push(arrSum(meterIntervalData[2][0][monthPhase][dayPhase]));
+          // monthly data
+          meterIntervalData[0][0].push(arrSum(meterIntervalData[1][0][monthPhase]));
+
+          console.log(meterIntervalData[0][0])
+          console.log(meterIntervalData[1][0])
+          console.log(meterIntervalData[2][0])
+
         }
         else
         {
-          if(model.monthlyMeterIntervals.lastObject.get("id") == data.get("id"))
+          if(prevDay != currentDay)
           {
-            dataValues.push(data.get('readValue'));
-          }
+            prevDay = currentDay;
 
-          prevDate = nextDate;
-          monthlyMeterIntervalData.push(arrSum(dataValues));
+            
+            // daily data
+            meterIntervalData[1][0][monthPhase].push(arrSum(meterIntervalData[2][0][monthPhase][dayPhase]));
+            // hourly data
+            meterIntervalData[2][0][monthPhase].push([]);
+            
+            
+            dayPhase++;
+          }
           
-          dataValues = [];
-          dataValues.push(data.get('readValue'));
+          if(prevMonth != currentMonth)
+          {
+            prevMonth = currentMonth;
+            
+            
+            // hourly data
+            meterIntervalData[2][0][monthPhase].pop();
+            dayPhase = 0;
+            
+            
+            // monthly data
+            meterIntervalData[0][0].push(arrSum(meterIntervalData[1][0][monthPhase]));
+            // daily data
+            meterIntervalData[1][0].push([]);
+            // hourly data
+            meterIntervalData[2][0].push([[]]);
+            
+            
+            monthPhase++;
+          }
+          
+          meterIntervalData[2][0][monthPhase][dayPhase].push(data.get('readValue'));
         }
         
       })
     }
 
-    if(model.monthlyMeterIntervalsPrevious.firstObject)
+    if(model.meterIntervals.firstObject)
     {
       // keep track of date in order to aggregate data
-      let prevDate = model.monthlyMeterIntervalsPrevious.firstObject.get("readDateTime");
+      let prevDate = model.meterIntervals.firstObject.get("readDateTime");
       // set prevDate to first day of month
       prevDate.setDate(1);
       // set prevDate to midnight
@@ -155,25 +285,25 @@ export default Route.extend({
       // reset data values
       dataValues = [];
       
-      model.monthlyMeterIntervalsPrevious.forEach(data => {
+      model.meterIntervals.forEach(data => {
 
         let nextDate = data.get('readDateTime');
         nextDate.setDate(1);
         nextDate.setHours(0,0,0,0);
 
-        if(prevDate.getTime() == nextDate.getTime() && model.monthlyMeterIntervalsPrevious.lastObject.get("id") != data.get("id"))
+        if(prevDate.getTime() == nextDate.getTime() && model.meterIntervals.lastObject.get("id") != data.get("id"))
         {
           dataValues.push(data.get('readValue'));
         }
         else
         {
-          if(model.monthlyMeterIntervalsPrevious.lastObject.get("id") == data.get("id"))
+          if(model.meterIntervals.lastObject.get("id") == data.get("id"))
           {
             dataValues.push(data.get('readValue'));
           }
 
           prevDate = nextDate;
-          monthlyMeterIntervalDataPrevious.push(arrSum(dataValues));
+          meterIntervalData[0][1].push(arrSum(dataValues));
           
           dataValues = [];
           dataValues.push(data.get('readValue'));
@@ -205,10 +335,10 @@ export default Route.extend({
 
     var data = [
       // temperature data
-      [dailyWeatherData,[]],
+      [weatherData[0][0],[]],
       // meter data
-      [monthlyMeterIntervalDataPrevious,[]],
-      [monthlyMeterIntervalData,[]],
+      [meterIntervalData[0][0],[]],
+      [meterIntervalData[0][1],[]],
     ]
 
     trimData(data[0], 0, 100);
@@ -217,7 +347,7 @@ export default Route.extend({
 
     
     let chartData = {
-      labels: labels,
+      labels: labels[0],
       datasets: [{
         yAxisID: 'temperature',
         label: 'Temperature (F°)',
@@ -399,7 +529,7 @@ export default Route.extend({
               if(model.dailyWeather.firstObject)
               {
 
-                labels.length = 0;
+                labels[0].length = 0;
 
                 // keep track of date in order to aggregate data
                 let prevDate = model.dailyWeather.firstObject.get("readDateTime");
@@ -409,7 +539,7 @@ export default Route.extend({
                 // keep track of data to aggregate
                 let dataValues = [];
 
-                dailyWeatherData = [];
+                weatherData[1][0] = [];
 
                 model.dailyWeather.forEach(data => {
 
@@ -427,10 +557,10 @@ export default Route.extend({
                       dataValues.push(data.get('value'));
                     }
             
-                    labels.push(prevDate.toLocaleDateString());
+                    labels[0].push(prevDate.toLocaleDateString());
                     prevDate = nextDate;
             
-                    dailyWeatherData.push(arrAvg(dataValues));
+                    weatherData[1][0].push(arrAvg(dataValues));
                     
                     dataValues = [];
                     dataValues.push(data.get('value'));
@@ -453,7 +583,7 @@ export default Route.extend({
                 // keep track of data to aggregate
                 let dataValues = [];
 
-                dailyMeterIntervalData = [];
+                meterIntervalData[1][0] = [];
 
                 model.dailyMeterIntervals.forEach(data => {
 
@@ -473,7 +603,7 @@ export default Route.extend({
 
                     prevDate = nextDate;
             
-                    dailyMeterIntervalData.push(arrSum(dataValues));
+                    meterIntervalData[1][0].push(arrSum(dataValues));
                     
                     dataValues = [];
                     dataValues.push(data.get('readValue'));
@@ -488,8 +618,8 @@ export default Route.extend({
               data[dataset][1].length = 0;
               chart.update();
 
-              data[0][0] = dailyWeatherData;
-              data[dataset][0] = dailyMeterIntervalData;
+              data[0][0] = weatherData[1][0];
+              data[dataset][0] = meterIntervalData[1][0];
               trimData(data[0], 0, 100);
               trimData(data[dataset]);
               
