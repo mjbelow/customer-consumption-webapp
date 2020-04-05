@@ -465,8 +465,11 @@ export default Route.extend({
 
           let chart = this;
 
+          // set dataset to meter's dataset if temperature dataset is clicked
+          dataset = dataset <= 1 ? dataset + 2 : dataset;
+
           // selected month
-          let selectedCurrentMonth = new Date(route.get('currentMonths')[2 - dataset]);
+          let selectedCurrentMonth = new Date(route.get('currentMonths')[3 - dataset]);
           selectedCurrentMonth.setMonth(selectedCurrentMonth.getMonth() + idx);
 
           // next month after selected month
@@ -528,7 +531,7 @@ export default Route.extend({
                 // keep track of data to aggregate
                 let dataValues = [];
 
-                weatherData[1][0] = [];
+                weatherData[dataset - 2][0] = [];
 
                 model.dailyWeather.forEach(data => {
 
@@ -549,7 +552,7 @@ export default Route.extend({
                     labels[0].push(prevDate.toLocaleDateString());
                     prevDate = nextDate;
             
-                    weatherData[1][0].push(arrAvg(dataValues));
+                    weatherData[dataset - 2][0].push(arrAvg(dataValues));
                     
                     dataValues = [];
                     dataValues.push(data.get('value'));
@@ -604,19 +607,24 @@ export default Route.extend({
               }
 
               // update chart with no data so transition to new data doesn't look strange (occurs when increasing the amount of labels)
+              // meter data
               data[dataset][1].length = 0;
+              // temperature data
+              data[dataset - 2][1].length = 0;
               chart.update();
 
-              data[0][0] = weatherData[1][0];
+              data[dataset - 2][0] = weatherData[dataset - 2][0];
               data[dataset][0] = meterIntervalData[1][0];
-              trimData(data[0], 0, 100);
+              trimData(data[dataset - 2], 0, 100);
               trimData(data[dataset]);
               
-              // hide other dataset
+              // hide other datasets
               chart.getDatasetMeta(3 - dataset).hidden = true;
+              chart.getDatasetMeta(5 - dataset).hidden = true;
               
-              // clear data from other dataset (in case user clicks legend to display hidden dataset)
+              // clear data from other datasets (in case user clicks legend to display hidden dataset)
               data[3 - dataset][1].length = 0;
+              data[5 - dataset][1].length = 0;
 
               chart.update();
 
