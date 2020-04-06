@@ -161,8 +161,17 @@ export default Route.extend({
     Chart.defaults.scale.gridLines.display = false;
 
     // aggregating functions
-    const arrSum = arr => arr.reduce((a,b) => a + b, 0);
-    const arrAvg = arr => arr.reduce((a,b) => a + b, 0) / arr.length;
+    const arrSum = arr => arr.reduce((a,b) => {
+      if(a === null && b === null)
+        return null;
+      return a + b;
+    }, null);
+    const arrAvg = arr => {
+      let sum = arrSum(arr);
+      if(sum === null)
+        return null;
+      return sum / arr.length;
+    }
 
     // get temperature data
     // [monthlyPrevious] [monthly]
