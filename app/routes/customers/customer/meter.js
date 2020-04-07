@@ -197,83 +197,107 @@ export default Route.extend({
     {
       if(model.firstObject)
       {
-        let currentTime = new Date(currentMonths[dataset]).getTime();
+        let currentTime = new Date(currentMonths[dataset]);
+        let baseMonth = currentTime.getMonth();
 
         // keep track of day to aggregate daily data
         // set prevDay to midnight
-        let prevDay = model.firstObject.get(dateData).setHours(0,0,0,0);
+        let prevDay = model.firstObject.get(dateData);
         
         // keep track of month to aggregate monthly data
         // set prevMonth to first day of month
-        let prevMonth = new Date(prevDay).setDate(1);
+        let prevMonth = new Date(prevDay)
+        prevMonth.setDate(1);
   
         // initialize month and day phase
         let monthPhase = 0;
         let dayPhase = 0;
+
+        let prevMonthOffset = prevMonth.getMonth() - baseMonth;
+        let prevDayOffset = prevDay.getDate() - 1;
   
         // daily data
-        dataArray[1][dataset].push([]);
+        dataArray[1][dataset][prevMonthOffset] = [];
         // hourly data
-        dataArray[2][dataset].push([[]]);
+        dataArray[2][dataset][prevMonthOffset] = [];
+        dataArray[2][dataset][prevMonthOffset][prevDayOffset] = [];
         
         model.forEach(data => {
 
-          let currentHour = data.get(dateData).getTime();
+          let currentHour = data.get(dateData);
 
-          let currentDay = new Date(currentHour).setHours(0,0,0,0);
-  
-          let currentMonth = new Date(currentDay).setDate(1);
-  
+          let currentDay = new Date(currentHour);
+          currentDay.setHours(0,0,0,0);
+
+          let currentMonth = new Date(currentDay)
+          currentMonth.setDate(1);
+
+          let currentMonthOffset = currentMonth.getMonth() - baseMonth;
+          let currentDayOffset = currentDay.getDate() - 1;
+          
           let last = model.lastObject.get("id") == data.get("id");
   
           let hourOffset = Math.floor((currentHour - currentDay) / (60*60*1000));
   
 
-          if(prevDay != currentDay)
+          if(prevDayOffset != currentDayOffset)
           {
-            prevDay = currentDay;
-
+            
             
             // daily data
-            dataArray[1][dataset][monthPhase].push(aggregateFunction(dataArray[2][dataset][monthPhase][dayPhase]));
-            // hourly data
-            dataArray[2][dataset][monthPhase].push([]);
+            dataArray[1][dataset][prevMonthOffset][prevDayOffset] = aggregateFunction(dataArray[2][dataset][prevMonthOffset][prevDayOffset]);
+            
+            if(prevMonthOffset === currentMonthOffset)
+            {
+              // hourly data
+              dataArray[2][dataset][currentMonthOffset][currentDayOffset] = [];
+            }
             
             
-            dayPhase++;
+            prevDayOffset = currentDayOffset;
+            // dayPhase++;
           }
           
-          if(prevMonth != currentMonth)
+          if(prevMonthOffset != currentMonthOffset)
           {
-            prevMonth = currentMonth;
             
             
             // hourly data
-            dataArray[2][dataset][monthPhase].pop();
-            dayPhase = 0;
+            // dataArray[2][dataset][monthPhase].pop();
+            // dayPhase = 0;
             
             
             // monthly data
-            dataArray[0][dataset].push(aggregateFunction(dataArray[1][dataset][monthPhase]));
+            dataArray[0][dataset][prevMonthOffset] = aggregateFunction(dataArray[1][dataset][prevMonthOffset]);
+
+
             // daily data
-            dataArray[1][dataset].push([]);
+            dataArray[1][dataset][currentMonthOffset] = [];
             // hourly data
-            dataArray[2][dataset].push([[]]);
+            dataArray[2][dataset][currentMonthOffset] = [];
+            dataArray[2][dataset][currentMonthOffset][currentDayOffset] = [];
+
+
+            // daily data
+            // dataArray[1][dataset].push([]);
+            // hourly data
+            // dataArray[2][dataset].push([[]]);
             
+            prevMonthOffset = currentMonthOffset;
             
-            monthPhase++;
+            // monthPhase++;
           }
 
           // hourly data
-          dataArray[2][dataset][monthPhase][dayPhase][hourOffset] = data.get(valueData);
+          dataArray[2][dataset][currentMonthOffset][currentDayOffset][hourOffset] = data.get(valueData);
           
           if(last)
           {          
   
             // daily data
-            dataArray[1][dataset][monthPhase].push(aggregateFunction(dataArray[2][dataset][monthPhase][dayPhase]));
+            dataArray[1][dataset][currentMonthOffset][currentDayOffset] = aggregateFunction(dataArray[2][dataset][currentMonthOffset][currentDayOffset]);
             // monthly data
-            dataArray[0][dataset].push(aggregateFunction(dataArray[1][dataset][monthPhase]));
+            dataArray[0][dataset][currentMonthOffset] = aggregateFunction(dataArray[1][dataset][currentMonthOffset]);
   
             console.log(dataArray[0][dataset])
             console.log(dataArray[1][dataset])
