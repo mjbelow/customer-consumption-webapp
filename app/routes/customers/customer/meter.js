@@ -30,7 +30,7 @@ export default Route.extend({
     let currentMonthPrevious = new Date(currentMonth);
     currentMonthPrevious.setFullYear(currentMonthPrevious.getFullYear() - 1);
 
-    this.set('currentMonths',[currentMonth,currentMonthPrevious]);
+    this.set('currentMonths',[currentMonthPrevious,currentMonth]);
     
     // next month (previous year)
     let nextMonthPrevious = new Date(currentMonthPrevious);
@@ -45,15 +45,7 @@ export default Route.extend({
     /*
     [monthly]
     [daily]
-
-      [previous]
-
-        [],[],[]
-
-      [current]
-
-        [],[],[]
-
+      [],[],[]
     [hourly]
     */
     let labels = [
@@ -157,6 +149,7 @@ export default Route.extend({
     let route = this;
     let params = this.get('params');
     let labels = this.get('labels');
+    let currentMonths = this.get('currentMonths');
 
     Chart.defaults.scale.gridLines.display = false;
 
@@ -204,6 +197,8 @@ export default Route.extend({
     {
       if(model.firstObject)
       {
+        let currentTime = new Date(currentMonths[dataset]).getTime();
+
         // keep track of day to aggregate daily data
         // set prevDay to midnight
         let prevDay = model.firstObject.get(dateData).setHours(0,0,0,0);
@@ -222,8 +217,10 @@ export default Route.extend({
         dataArray[2][dataset].push([[]]);
         
         model.forEach(data => {
-  
-          let currentDay = data.get(dateData).setHours(0,0,0,0);
+
+          let currentHour = data.get(dateData).getTime();
+
+          let currentDay = new Date(currentHour).setHours(0,0,0,0);
   
           let currentMonth = new Date(currentDay).setDate(1);
   
@@ -231,7 +228,12 @@ export default Route.extend({
   
   
           if(last)
-          {          
+          {
+            while(currentTime < currentHour)
+            {
+              dataArray[2][dataset][monthPhase][dayPhase].push(null);
+              currentTime += (60*60*1000);
+            }
   
             // hourly data
             dataArray[2][dataset][monthPhase][dayPhase].push(data.get(valueData));
@@ -250,8 +252,23 @@ export default Route.extend({
             if(prevDay != currentDay)
             {
               prevDay = currentDay;
-  
-              
+
+              while(currentTime < currentDay)
+              {
+                if(dataArray[2][dataset][monthPhase][dayPhase].length === 24)
+                {
+                  // daily data
+                  dataArray[1][dataset][monthPhase].push(aggregateFunction(dataArray[2][dataset][monthPhase][dayPhase]));
+                  // hourly data
+                  dataArray[2][dataset][monthPhase].push([]);
+
+
+                  dayPhase++;
+                }
+                dataArray[2][dataset][monthPhase][dayPhase].push(null);
+                currentTime += (60*60*1000);
+              }
+
               // daily data
               dataArray[1][dataset][monthPhase].push(aggregateFunction(dataArray[2][dataset][monthPhase][dayPhase]));
               // hourly data
@@ -282,9 +299,17 @@ export default Route.extend({
               monthPhase++;
             }
             
+            while(currentTime < currentHour)
+            {
+              dataArray[2][dataset][monthPhase][dayPhase].push(null);
+              currentTime += (60*60*1000);
+            }
+
             dataArray[2][dataset][monthPhase][dayPhase].push(data.get(valueData));
           }
           
+          currentTime += (60*60*1000);
+
         });
       }
     }
