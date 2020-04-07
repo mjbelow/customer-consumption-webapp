@@ -8,7 +8,7 @@ export default Route.extend({
     this.set('params',params);
 
     // current day
-    let currentDay = new Date("10/23/2019");
+    let currentDay = new Date("12/23/2019");
     currentDay.setHours(0,0,0,0);
     
     // next day
@@ -22,6 +22,11 @@ export default Route.extend({
     currentMonth.setDate(1);
     currentMonth.setMonth(currentMonth.getMonth() - monthCount + 1);
     
+    // current month UTC
+    let currentMonthUTC = new Date(currentDay);
+    currentMonthUTC.setUTCDate(1);
+    currentMonthUTC.setUTCMonth(currentMonthUTC.getUTCMonth() - monthCount + 1);
+
     // next month
     let nextMonth = new Date(currentMonth);
     nextMonth.setMonth(nextMonth.getMonth() + monthCount);
@@ -30,7 +35,11 @@ export default Route.extend({
     let currentMonthPrevious = new Date(currentMonth);
     currentMonthPrevious.setFullYear(currentMonthPrevious.getFullYear() - 1);
 
-    this.set('currentMonths',[currentMonthPrevious,currentMonth]);
+    // current month UTC (previous year)
+    let currentMonthPreviousUTC = new Date(currentMonthUTC);
+    currentMonthPreviousUTC.setUTCFullYear(currentMonthPreviousUTC.getUTCFullYear() - 1);
+
+    this.set('currentMonths',[currentMonthPreviousUTC,currentMonthUTC]);
     
     // next month (previous year)
     let nextMonthPrevious = new Date(currentMonthPrevious);
@@ -72,37 +81,37 @@ export default Route.extend({
     for(let i = 0; i < monthCount; i++)
     {
       // generate month labels
-      labels[0].push(months[(currentMonth.getMonth() + i) % 12]);
+      labels[0].push(months[(currentMonthUTC.getUTCMonth() + i) % 12]);
       
       let monthRange;
 
       // use current year if it's a leap year, else use previous year (whether it's a leap year or not)
-      if(leapYear(currentMonth.getFullYear()))
+      if(leapYear(currentMonthUTC.getUTCFullYear()))
       {
-        monthRange = [new Date(currentMonth), new Date(currentMonth)];
+        monthRange = [new Date(currentMonthUTC), new Date(currentMonthUTC)];
       }
       else
       {
-        monthRange = [new Date(currentMonthPrevious), new Date(currentMonthPrevious)];
+        monthRange = [new Date(currentMonthPreviousUTC), new Date(currentMonthPreviousUTC)];
       }
 
-      monthRange[0].setMonth(monthRange[0].getMonth() + i);
-      monthRange[1].setMonth(monthRange[0].getMonth() + 1);
+      monthRange[0].setUTCMonth(monthRange[0].getUTCMonth() + i);
+      monthRange[1].setUTCMonth(monthRange[0].getUTCMonth() + 1);
       
       labels[1][i] = [];
       
       // generate daily labels
       while(monthRange[0].getTime() < monthRange[1].getTime())
       {
-        labels[1][i].push(`${monthRange[0].getMonth()+1} / ${monthRange[0].getDate()}`);
+        labels[1][i].push(`${monthRange[0].getUTCMonth()+1} / ${monthRange[0].getUTCDate()}`);
         
-        monthRange[0].setDate(monthRange[0].getDate() + 1);
+        monthRange[0].setDate(monthRange[0].getUTCDate() + 1);
       }
     }
 
     this.set('labels',labels);
-    this.set('currentYear',currentMonth.getFullYear());
-    this.set('previousYear',currentMonthPrevious.getFullYear());
+    this.set('currentYear',currentMonth.getUTCFullYear());
+    this.set('previousYear',currentMonthPrevious.getUTCFullYear());
 
     return hash({
       meter: this.store.findRecord('meter', params.meterId),
@@ -198,7 +207,7 @@ export default Route.extend({
       if(model.firstObject)
       {
         let currentTime = new Date(currentMonths[dataset]);
-        let baseMonth = currentTime.getMonth();
+        let baseMonth = currentTime.getUTCMonth();
 
         // keep track of day to aggregate daily data
         // set prevDay to midnight
@@ -207,14 +216,14 @@ export default Route.extend({
         // keep track of month to aggregate monthly data
         // set prevMonth to first day of month
         let prevMonth = new Date(prevDay)
-        prevMonth.setDate(1);
+        prevMonth.setUTCDate(1);
   
         // initialize month and day phase
         let monthPhase = 0;
         let dayPhase = 0;
 
-        let prevMonthOffset = prevMonth.getMonth() - baseMonth;
-        let prevDayOffset = prevDay.getDate() - 1;
+        let prevMonthOffset = prevMonth.getUTCMonth() - baseMonth;
+        let prevDayOffset = prevDay.getUTCDate() - 1;
   
         // daily data
         dataArray[1][dataset][prevMonthOffset] = [];
@@ -224,20 +233,20 @@ export default Route.extend({
         
         model.forEach(data => {
 
-          let currentHour = data.get(dateData);
+          let currentDay = data.get(dateData);
 
-          let currentDay = new Date(currentHour);
-          currentDay.setHours(0,0,0,0);
+          let hourOffset = currentDay.getUTCHours();
+
+          currentDay.setUTCHours(0,0,0,0);
 
           let currentMonth = new Date(currentDay)
-          currentMonth.setDate(1);
+          currentMonth.setUTCDate(1);
 
-          let currentMonthOffset = currentMonth.getMonth() - baseMonth;
-          let currentDayOffset = currentDay.getDate() - 1;
+          let currentMonthOffset = currentMonth.getUTCMonth() - baseMonth;
+          let currentDayOffset = currentDay.getUTCDate() - 1;
           
           let last = model.lastObject.get("id") == data.get("id");
   
-          let hourOffset = Math.floor((currentHour - currentDay) / (60*60*1000));
   
 
           if(prevDayOffset != currentDayOffset)
