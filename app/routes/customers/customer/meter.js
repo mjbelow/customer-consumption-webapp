@@ -226,17 +226,50 @@ export default Route.extend({
   
           let last = model.lastObject.get("id") == data.get("id");
   
+          let hourOffset = Math.floor((currentHour - currentDay) / (60*60*1000));
   
-          if(last)
+
+          if(prevDay != currentDay)
           {
-            while(currentTime < currentHour)
-            {
-              dataArray[2][dataset][monthPhase][dayPhase].push(null);
-              currentTime += (60*60*1000);
-            }
-  
+            prevDay = currentDay;
+
+            
+            // daily data
+            dataArray[1][dataset][monthPhase].push(aggregateFunction(dataArray[2][dataset][monthPhase][dayPhase]));
             // hourly data
-            dataArray[2][dataset][monthPhase][dayPhase].push(data.get(valueData));
+            dataArray[2][dataset][monthPhase].push([]);
+            
+            
+            dayPhase++;
+          }
+          
+          if(prevMonth != currentMonth)
+          {
+            prevMonth = currentMonth;
+            
+            
+            // hourly data
+            dataArray[2][dataset][monthPhase].pop();
+            dayPhase = 0;
+            
+            
+            // monthly data
+            dataArray[0][dataset].push(aggregateFunction(dataArray[1][dataset][monthPhase]));
+            // daily data
+            dataArray[1][dataset].push([]);
+            // hourly data
+            dataArray[2][dataset].push([[]]);
+            
+            
+            monthPhase++;
+          }
+
+          // hourly data
+          dataArray[2][dataset][monthPhase][dayPhase][hourOffset] = data.get(valueData);
+          
+          if(last)
+          {          
+  
             // daily data
             dataArray[1][dataset][monthPhase].push(aggregateFunction(dataArray[2][dataset][monthPhase][dayPhase]));
             // monthly data
@@ -247,69 +280,7 @@ export default Route.extend({
             console.log(dataArray[2][dataset])
   
           }
-          else
-          {
-            if(prevDay != currentDay)
-            {
-              prevDay = currentDay;
-
-              while(currentTime < currentDay)
-              {
-                if(dataArray[2][dataset][monthPhase][dayPhase].length === 24)
-                {
-                  // daily data
-                  dataArray[1][dataset][monthPhase].push(aggregateFunction(dataArray[2][dataset][monthPhase][dayPhase]));
-                  // hourly data
-                  dataArray[2][dataset][monthPhase].push([]);
-
-
-                  dayPhase++;
-                }
-                dataArray[2][dataset][monthPhase][dayPhase].push(null);
-                currentTime += (60*60*1000);
-              }
-
-              // daily data
-              dataArray[1][dataset][monthPhase].push(aggregateFunction(dataArray[2][dataset][monthPhase][dayPhase]));
-              // hourly data
-              dataArray[2][dataset][monthPhase].push([]);
-              
-              
-              dayPhase++;
-            }
-            
-            if(prevMonth != currentMonth)
-            {
-              prevMonth = currentMonth;
-              
-              
-              // hourly data
-              dataArray[2][dataset][monthPhase].pop();
-              dayPhase = 0;
-              
-              
-              // monthly data
-              dataArray[0][dataset].push(aggregateFunction(dataArray[1][dataset][monthPhase]));
-              // daily data
-              dataArray[1][dataset].push([]);
-              // hourly data
-              dataArray[2][dataset].push([[]]);
-              
-              
-              monthPhase++;
-            }
-            
-            while(currentTime < currentHour)
-            {
-              dataArray[2][dataset][monthPhase][dayPhase].push(null);
-              currentTime += (60*60*1000);
-            }
-
-            dataArray[2][dataset][monthPhase][dayPhase].push(data.get(valueData));
-          }
           
-          currentTime += (60*60*1000);
-
         });
       }
     }
@@ -322,7 +293,11 @@ export default Route.extend({
     // prevent data points from going above/below a max/min, but still retain original data
     function trimData(arr, min, max) {
       let i;
-      let length = arr[0].length;
+      let length;
+      if(arr[0])
+        length = arr[0].length;
+      else
+        length = 0;
       arr[1].length = 0;
       for(i = 0; i < length; i++)
       {
