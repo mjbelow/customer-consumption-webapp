@@ -1,3 +1,9 @@
+<p>
+  {{mdc-button style="raised" disabled=monthlyDisabled click=(action "updateChart" 0) label="Monthly"}}
+  {{mdc-button style="raised" disabled=dailyDisabled click=(action "updateChart" 1) label="Daily"}}
+  {{mdc-button style="raised" disabled=hourlyDisabled click=(action "updateChart" 2) label="Hourly"}}
+</p>
+
 <div id="chart_container">
   {{ember-chart type="bar" data=chartData options=chartOptions}}
 </div>

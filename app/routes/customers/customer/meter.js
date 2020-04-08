@@ -155,6 +155,16 @@ export default Route.extend({
   setupController(controller, model) {
     this._super(controller, model);
 
+    let chartInstance;
+
+    controller.set("monthlyDisabled", true);
+    controller.set("dailyDisabled", true);
+    controller.set("hourlyDisabled", true);
+
+    controller.set("actions", {
+      updateChart: updateChart
+    })
+
     let route = this;
     let params = this.get('params');
     let labels = this.get('labels');
@@ -418,7 +428,157 @@ export default Route.extend({
       }]
     };
 
+    let prevLevel = level;
+
+    function updateChart(currentLevel, idx, dataset)
+    {
+      level = currentLevel >= 2 ? 2 : currentLevel <= 0 ? 0 : currentLevel;
+
+      // update selectedMonth or selectedDay if level increases
+      // but don't update if level decreases (not yet implemented)
+      let levelIncreased = prevLevel < level;
+      prevLevel = level;
+
+
+      if(level >= 0)
+        controller.set("monthlyDisabled", false);
+      else
+        controller.set("monthlyDisabled", true);
+
+      if(level >= 1)
+        controller.set("dailyDisabled", false);
+      else
+        controller.set("dailyDisabled", true);
+
+      if(level >= 2)
+        controller.set("hourlyDisabled", false);
+      else
+        controller.set("hourlyDisabled", true);
+
+      if(level === 1)
+      {
+        if(levelIncreased)
+        {
+          selectedMonth = idx;
+        }
+        chartData.labels = labels[level][selectedMonth];
+      }
+      else
+      {
+        if(level === 2 && levelIncreased)
+        {
+          selectedDay = idx;
+        }
+        chartData.labels = labels[level];
+      }
+
+      // update chart with no data so transition to new data doesn't look strange (occurs when increasing the amount of labels)
+      data[0][1].length = 0;
+      data[1][1].length = 0;
+      data[2][1].length = 0;
+      data[3][1].length = 0;
+
+      if(level === 0)
+      {
+        chartInstance.getDatasetMeta(0).hidden = false;
+        chartInstance.getDatasetMeta(1).hidden = false;
+        chartInstance.getDatasetMeta(2).hidden = false;
+        chartInstance.getDatasetMeta(3).hidden = false;
+      }
+      else if(dataset !== undefined)
+      {
+        // set dataset to meter's dataset if temperature dataset is clicked
+        // dataset 0 = temperature (previous)
+        // dataset 1 = temperature (current)
+        // dataset 2 = meter intervals (previous)
+        // dataset 3 = meter intervals (current)
+        dataset = dataset <= 1 ? dataset + 2 : dataset;
+
+        selectedYear = dataset - 2;
+
+        // hide other datasets
+        chartInstance.getDatasetMeta(3 - dataset).hidden = true;
+        chartInstance.getDatasetMeta(5 - dataset).hidden = true;
+
+        // show selected dataset (if hidden)
+        chartInstance.getDatasetMeta(dataset - 2).hidden = false;
+        chartInstance.getDatasetMeta(dataset).hidden = false;
+      }
+
+      chartInstance.update();
+
+      // update chart with new data from current level
+      if(level === 0)
+      {
+        // temperature data (previous)
+        data[0][0] = weatherData[level][0];
+        // temperature data (current)
+        data[1][0] = weatherData[level][1];
+        // meter data (previous)
+        data[2][0] = meterIntervalData[level][0];
+        // meter data (current)
+        data[3][0] = meterIntervalData[level][1];
+      }
+      else if(level === 1)
+      {
+        // temperature data (previous)
+        if(weatherData[level][0][selectedMonth])
+          data[0][0] = weatherData[level][0][selectedMonth];
+
+        // temperature data (current)
+        if(weatherData[level][1][selectedMonth])
+          data[1][0] = weatherData[level][1][selectedMonth];
+
+        // meter data (previous)
+        if(meterIntervalData[level][0][selectedMonth])
+          data[2][0] = meterIntervalData[level][0][selectedMonth];
+
+        // meter data (current)
+        if(meterIntervalData[level][1][selectedMonth])
+          data[3][0] = meterIntervalData[level][1][selectedMonth];
+      }
+      else
+      {
+        // temperature data (previous)
+        if(weatherData[level][0][selectedMonth] && weatherData[level][0][selectedMonth][selectedDay])
+          data[0][0] = weatherData[level][0][selectedMonth][selectedDay];
+
+        // temperature data (current)
+        if(weatherData[level][1][selectedMonth] && weatherData[level][1][selectedMonth][selectedDay])
+          data[1][0] = weatherData[level][1][selectedMonth][selectedDay];
+
+        // meter data (previous)
+        if(meterIntervalData[level][0][selectedMonth] && meterIntervalData[level][0][selectedMonth][selectedDay])
+          data[2][0] = meterIntervalData[level][0][selectedMonth][selectedDay];
+
+        // meter data (current)
+        if(meterIntervalData[level][1][selectedMonth] && meterIntervalData[level][1][selectedMonth][selectedDay])
+          data[3][0] = meterIntervalData[level][1][selectedMonth][selectedDay];
+      }
+
+      trimData(data[0], 0, 100);
+      trimData(data[1], 0, 100);
+      trimData(data[2]);
+      trimData(data[3]);
+
+      chartInstance.update();
+    }
+
     let chartOptions = {
+      animation: {
+        onProgress: function() {
+          if(chartInstance === undefined) {
+            chartInstance = this;
+            controller.set("monthlyDisabled", false);
+          }
+        },
+        onComplete: function() {
+          if(chartInstance === undefined) {
+            chartInstance = this;
+            controller.set("monthlyDisabled", false);
+          }
+        }
+      },
       plugins: {
         datalabels: {
           align: 'top',
@@ -510,112 +670,12 @@ export default Route.extend({
 
           let chart = this;
 
-          // set dataset to meter's dataset if temperature dataset is clicked
-          // dataset 0 = temperature (previous)
-          // dataset 1 = temperature (current)
-          // dataset 2 = meter intervals (previous)
-          // dataset 3 = meter intervals (current)
-          dataset = dataset <= 1 ? dataset + 2 : dataset;
-
-          selectedYear = dataset - 2;
-
-          let prevLevel = level;
-          level = level < 2 ? level + 1 : level;
-
-          // update selectedMonth or selectedDay if level increases
-          // but don't update if level decreases (not yet implemented)
-          let levelIncreased = prevLevel < level;
-
-          if(level === 1)
-          {
-            if(levelIncreased)
-            {
-              selectedMonth = idx;
-            }
-            chartData.labels = labels[level][selectedMonth];
-          }
-          else
-          {
-            if(level === 2 && levelIncreased)
-            {
-              selectedDay = idx;
-            }
-            chartData.labels = labels[level];
+          if(chartInstance === undefined) {
+            chartInstance = chart;
+            controller.set("monthlyDisabled", false);
           }
 
-          chart.update();
-
-          // update chart with no data so transition to new data doesn't look strange (occurs when increasing the amount of labels)
-          data[0][1].length = 0;
-          data[1][1].length = 0;
-          data[2][1].length = 0;
-          data[3][1].length = 0;
-
-          // hide other datasets
-          chart.getDatasetMeta(3 - dataset).hidden = true;
-          chart.getDatasetMeta(5 - dataset).hidden = true;
-
-          // show selected dataset (if hidden)
-          chart.getDatasetMeta(dataset - 2).hidden = false;
-          chart.getDatasetMeta(dataset).hidden = false;
-
-          chart.update();
-
-          // update chart with new data from current level
-          if(level === 0)
-          {
-            // temperature data (previous)
-            data[0][0] = weatherData[level][0];
-            // temperature data (current)
-            data[1][0] = weatherData[level][1];
-            // meter data (previous)
-            data[2][0] = meterIntervalData[level][0];
-            // meter data (current)
-            data[3][0] = meterIntervalData[level][1];
-          }
-          else if(level === 1)
-          {
-            // temperature data (previous)
-            if(weatherData[level][0][selectedMonth])
-              data[0][0] = weatherData[level][0][selectedMonth];
-
-            // temperature data (current)
-            if(weatherData[level][1][selectedMonth])
-              data[1][0] = weatherData[level][1][selectedMonth];
-
-            // meter data (previous)
-            if(meterIntervalData[level][0][selectedMonth])
-              data[2][0] = meterIntervalData[level][0][selectedMonth];
-
-            // meter data (current)
-            if(meterIntervalData[level][1][selectedMonth])
-              data[3][0] = meterIntervalData[level][1][selectedMonth];
-          }
-          else
-          {
-            // temperature data (previous)
-            if(weatherData[level][0][selectedMonth] && weatherData[level][0][selectedMonth][selectedDay])
-              data[0][0] = weatherData[level][0][selectedMonth][selectedDay];
-
-            // temperature data (current)
-            if(weatherData[level][1][selectedMonth] && weatherData[level][1][selectedMonth][selectedDay])
-              data[1][0] = weatherData[level][1][selectedMonth][selectedDay];
-
-            // meter data (previous)
-            if(meterIntervalData[level][0][selectedMonth] && meterIntervalData[level][0][selectedMonth][selectedDay])
-              data[2][0] = meterIntervalData[level][0][selectedMonth][selectedDay];
-
-            // meter data (current)
-            if(meterIntervalData[level][1][selectedMonth] && meterIntervalData[level][1][selectedMonth][selectedDay])
-              data[3][0] = meterIntervalData[level][1][selectedMonth][selectedDay];
-          }
-
-          trimData(data[0], 0, 100);
-          trimData(data[1], 0, 100);
-          trimData(data[2]);
-          trimData(data[3]);
-
-          chart.update();
+          updateChart(level+1, idx, dataset);
 
         }
 
