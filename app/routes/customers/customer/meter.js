@@ -576,24 +576,38 @@ export default Route.extend({
           else if(level === 1)
           {
             // temperature data (previous)
-            data[0][0] = weatherData[level][0][selectedMonth];
+            if(weatherData[level][0][selectedMonth])
+              data[0][0] = weatherData[level][0][selectedMonth];
+
             // temperature data (current)
-            data[1][0] = weatherData[level][1][selectedMonth];
+            if(weatherData[level][1][selectedMonth])
+              data[1][0] = weatherData[level][1][selectedMonth];
+
             // meter data (previous)
-            data[2][0] = meterIntervalData[level][0][selectedMonth];
+            if(meterIntervalData[level][0][selectedMonth])
+              data[2][0] = meterIntervalData[level][0][selectedMonth];
+
             // meter data (current)
-            data[3][0] = meterIntervalData[level][1][selectedMonth];
+            if(meterIntervalData[level][1][selectedMonth])
+              data[3][0] = meterIntervalData[level][1][selectedMonth];
           }
           else
           {
             // temperature data (previous)
-            data[0][0] = weatherData[level][0][selectedMonth][selectedDay];
+            if(weatherData[level][0][selectedMonth] && weatherData[level][0][selectedMonth][selectedDay])
+              data[0][0] = weatherData[level][0][selectedMonth][selectedDay];
+
             // temperature data (current)
-            data[1][0] = weatherData[level][1][selectedMonth][selectedDay];
+            if(weatherData[level][1][selectedMonth] && weatherData[level][1][selectedMonth][selectedDay])
+              data[1][0] = weatherData[level][1][selectedMonth][selectedDay];
+
             // meter data (previous)
-            data[2][0] = meterIntervalData[level][0][selectedMonth][selectedDay];
+            if(meterIntervalData[level][0][selectedMonth] && meterIntervalData[level][0][selectedMonth][selectedDay])
+              data[2][0] = meterIntervalData[level][0][selectedMonth][selectedDay];
+
             // meter data (current)
-            data[3][0] = meterIntervalData[level][1][selectedMonth][selectedDay];
+            if(meterIntervalData[level][1][selectedMonth] && meterIntervalData[level][1][selectedMonth][selectedDay])
+              data[3][0] = meterIntervalData[level][1][selectedMonth][selectedDay];
           }
 
           trimData(data[0], 0, 100);
