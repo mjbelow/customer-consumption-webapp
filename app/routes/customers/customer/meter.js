@@ -155,9 +155,8 @@ export default Route.extend({
   setupController(controller, model) {
     this._super(controller, model);
 
-    let chartInstance;
+    controller.set("chartInstance", undefined);
 
-    controller.set("monthlyDisabled", true);
     controller.set("dailyDisabled", true);
     controller.set("hourlyDisabled", true);
 
@@ -165,10 +164,10 @@ export default Route.extend({
       updateChart: updateChart
     })
 
-    let route = this;
-    let params = this.get('params');
-    let labels = this.get('labels');
-    let currentMonths = this.get('currentMonths');
+    controller.set("route", this);
+    controller.set("params", this.get('params'));
+    controller.set("labels", this.get('labels'));
+    controller.set("currentMonths", this.get('currentMonths'));
 
     Chart.defaults.scale.gridLines.display = false;
 
@@ -189,34 +188,35 @@ export default Route.extend({
     // [monthlyPrevious] [monthly]
     // [dailyPrevious] [daily]
     // [hourlyPrevious] [hourly]
-    let weatherData = [
+    controller.set("weatherData", [
       [[],[]],
       [[],[]],
       [[],[]]
-    ];
+    ]);
 
     // get meter data
     // [monthlyPrevious] [monthly]
     // [dailyPrevious] [daily]
     // [hourlyPrevious] [hourly]
-    let meterIntervalData = [
+    controller.set("meterIntervalData", [
       [[],[]],
       [[],[]],
       [[],[]]
-    ];
+    ]);
     
     // keep track of level (monthly, daily, hourly)
-    let level = 0;
-    let selectedYear = 0;
-    let selectedMonth = 0;
-    let selectedDay = 0;
+    controller.set("level", 0);
+    controller.set("prevLevel", 0);
+    controller.set("selectedYear", 0);
+    controller.set("selectedMonth", 0);
+    controller.set("selectedDay", 0);
 
 
     function aggregateData(model, dataArray, dataset, valueData, dateData, aggregateFunction)
     {
       if(model.firstObject)
       {
-        let currentTime = new Date(currentMonths[dataset]);
+        let currentTime = new Date(controller.get("currentMonths")[dataset]);
         let baseMonth = currentTime.getUTCMonth();
 
         // keep track of day to aggregate daily data
@@ -328,10 +328,10 @@ export default Route.extend({
       }
     }
 
-    aggregateData(model.meterIntervalsPrevious, meterIntervalData, 0, "readValue", "readDateTime", arrSum);
-    aggregateData(model.meterIntervals, meterIntervalData, 1, "readValue", "readDateTime", arrSum);
-    aggregateData(model.weatherPrevious, weatherData, 0, "value", "readDateTime", arrAvg);
-    aggregateData(model.weather, weatherData, 1, "value", "readDateTime", arrAvg);
+    aggregateData(model.meterIntervalsPrevious, controller.get("meterIntervalData"), 0, "readValue", "readDateTime", arrSum);
+    aggregateData(model.meterIntervals, controller.get("meterIntervalData"), 1, "readValue", "readDateTime", arrSum);
+    aggregateData(model.weatherPrevious, controller.get("weatherData"), 0, "value", "readDateTime", arrAvg);
+    aggregateData(model.weather, controller.get("weatherData"), 1, "value", "readDateTime", arrAvg);
 
     // prevent data points from going above/below a max/min, but still retain original data
     function trimData(arr, min, max) {
@@ -358,29 +358,29 @@ export default Route.extend({
       return arr;
     }
 
-    var data = [
+    controller.set("data", [
       // temperature data (previous)
-      [weatherData[0][0],[]],
+      [controller.get("weatherData")[0][0],[]],
       // temperature data (current)
-      [weatherData[0][1],[]],
+      [controller.get("weatherData")[0][1],[]],
       // meter data (previous)
-      [meterIntervalData[0][0],[]],
+      [controller.get("meterIntervalData")[0][0],[]],
       // meter data (current)
-      [meterIntervalData[0][1],[]],
-    ]
+      [controller.get("meterIntervalData")[0][1],[]],
+    ]);
 
-    trimData(data[0], 0, 100);
-    trimData(data[1], 0, 100);
-    trimData(data[2]);
-    trimData(data[3]);
+    trimData(controller.get("data")[0], 0, 100);
+    trimData(controller.get("data")[1], 0, 100);
+    trimData(controller.get("data")[2]);
+    trimData(controller.get("data")[3]);
 
     
-    let chartData = {
-      labels: labels[0],
+    controller.set("chartData", {
+      labels: controller.get("labels")[0],
       datasets: [{
         yAxisID: 'temperature',
         label: `Temperature (${this.get('previousYear')})`,
-        data: data[0][1],
+        data: controller.get("data")[0][1],
         borderColor: 'hsla(220,0%,41%,.8)',
         borderWidth: 1,
         type: 'line',
@@ -395,7 +395,7 @@ export default Route.extend({
       },{
         yAxisID: 'temperature',
         label: `Temperature (${this.get('currentYear')})`,
-        data: data[1][1],
+        data: controller.get("data")[1][1],
         borderColor: 'hsla(220,100%,41%,.8)',
         borderWidth: 1,
         type: 'line',
@@ -410,7 +410,7 @@ export default Route.extend({
       },{
         yAxisID: 'meter',
         label: `${model.meter.serviceType} (${this.get('previousYear')})`,
-        data: data[2][1],
+        data: controller.get("data")[2][1],
         backgroundColor:  'hsla(220,0%,61%,0.2)',
         borderColor: 'hsla(220,0%,61%,1)',
         borderWidth: 1,
@@ -419,19 +419,30 @@ export default Route.extend({
       },{
         yAxisID: 'meter',
         label: `${model.meter.serviceType} (${this.get('currentYear')})`,
-        data: data[3][1],
+        data: controller.get("data")[3][1],
         backgroundColor:  'hsla(220,100%,61%,0.2)',
         borderColor: 'hsla(220,100%,61%,1)',
         borderWidth: 1,
         hoverBorderWidth: 4,
         type: 'bar'
       }]
-    };
-
-    let prevLevel = level;
+    });
 
     function updateChart(currentLevel, idx, dataset)
     {
+      let chartData = controller.get("chartData");
+      let data = controller.get("data");
+      let weatherData = controller.get("weatherData");
+      let meterIntervalData = controller.get("meterIntervalData");
+      let level = controller.get("level");
+      let prevLevel = controller.get("prevLevel");
+      let chartInstance = controller.get("chartInstance");
+
+      let selectedYear = controller.get("selectedYear");
+      let selectedMonth = controller.get("selectedMonth");
+      let selectedDay = controller.get("selectedDay");
+      let labels = controller.get("labels");
+
       level = currentLevel >= 2 ? 2 : currentLevel <= 0 ? 0 : currentLevel;
 
       // update selectedMonth or selectedDay if level increases
@@ -561,20 +572,32 @@ export default Route.extend({
       trimData(data[2]);
       trimData(data[3]);
 
+      controller.set("chartData", chartData);
+      controller.set("data", data);
+      controller.set("weatherData", weatherData);
+      controller.set("meterIntervalData", meterIntervalData);
+      controller.set("level", level);
+      controller.set("prevLevel", prevLevel);
+      controller.set("chartInstance", chartInstance);
+
+      controller.set("selectedYear", selectedYear);
+      controller.set("selectedMonth", selectedMonth);
+      controller.set("selectedDay", selectedDay);
+
       chartInstance.update();
     }
 
-    let chartOptions = {
+    controller.set("chartOptions", {
       animation: {
         onProgress: function() {
-          if(chartInstance === undefined) {
-            chartInstance = this;
+          if(controller.get("chartInstance") === undefined) {
+            controller.set("chartInstance", this);
             controller.set("monthlyDisabled", false);
           }
         },
         onComplete: function() {
-          if(chartInstance === undefined) {
-            chartInstance = this;
+          if(controller.get("chartInstance") === undefined) {
+            controller.set("chartInstance", this);
             controller.set("monthlyDisabled", false);
           }
         }
@@ -584,7 +607,7 @@ export default Route.extend({
           align: 'top',
           anchor: 'end',
           formatter: function(value, context) {
-            return parseFloat(data[context.datasetIndex][0][context.dataIndex]).toFixed(2);
+            return parseFloat(controller.get("data")[context.datasetIndex][0][context.dataIndex]).toFixed(2);
           },
           display: function(context) {
             // hide the temperature labels
@@ -603,7 +626,7 @@ export default Route.extend({
         callbacks: {
           label: function(tooltipItem) {
             let uom = tooltipItem.datasetIndex <= 1 ? 'F°' : model.meter.channel1RawUom;
-            return `${parseFloat(data[tooltipItem.datasetIndex][0][tooltipItem.index]).toFixed(2)} ${uom}`;
+            return `${parseFloat(controller.get("data")[tooltipItem.datasetIndex][0][tooltipItem.index]).toFixed(2)} ${uom}`;
           }
         }
       },
@@ -670,19 +693,17 @@ export default Route.extend({
 
           let chart = this;
 
-          if(chartInstance === undefined) {
-            chartInstance = chart;
+          if(controller.get("chartInstance") === undefined) {
+            controller.set("chartInstance", chart);
             controller.set("monthlyDisabled", false);
           }
 
-          updateChart(level+1, idx, dataset);
+          updateChart(controller.get("level")+1, idx, dataset);
 
         }
 
       }
-    }
+    });
 
-    controller.set('chartData', chartData);
-    controller.set('chartOptions', chartOptions);
   }
 });
