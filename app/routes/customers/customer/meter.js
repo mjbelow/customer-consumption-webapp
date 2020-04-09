@@ -521,6 +521,9 @@ export default Route.extend({
       // update chart with new data from current level
       if(level === 0)
       {
+        // update chart title
+        chartInstance.options.title.text[1] = `(${controller.get("labels")[0].toString().replace(/,/g,", ")})`;
+
         // temperature data (previous)
         data[0][0] = weatherData[level][0];
         // temperature data (current)
@@ -532,6 +535,9 @@ export default Route.extend({
       }
       else if(level === 1)
       {
+        // update chart title
+        chartInstance.options.title.text[1] = `(${controller.get("labels")[0][selectedMonth]})`;
+
         // temperature data (previous)
         if(weatherData[level][0][selectedMonth])
           data[0][0] = weatherData[level][0][selectedMonth];
@@ -550,6 +556,9 @@ export default Route.extend({
       }
       else
       {
+        // update chart title
+        chartInstance.options.title.text[1] = `(${controller.get("labels")[0][selectedMonth]} ${selectedDay + 1})`;
+
         // temperature data (previous)
         if(weatherData[level][0][selectedMonth] && weatherData[level][0][selectedMonth][selectedDay])
           data[0][0] = weatherData[level][0][selectedMonth][selectedDay];
@@ -588,6 +597,12 @@ export default Route.extend({
     }
 
     controller.set("chartOptions", {
+      title: {
+        display: true,
+        fontSize: 14,
+        padding: 30,
+        text: [`Meter: ${model.meter.id}`, `(${controller.get("labels")[0].toString().replace(/,/g,", ")})`]
+      },
       animation: {
         onProgress: function() {
           if(controller.get("chartInstance") === undefined) {
@@ -670,7 +685,8 @@ export default Route.extend({
         display: true,
         onHover: function(e) {
           e.target.style.cursor = 'pointer';
-        }
+        },
+        position: 'bottom'
       },
       hover: {
         onHover: function(e) {
