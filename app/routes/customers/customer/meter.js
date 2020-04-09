@@ -541,18 +541,26 @@ export default Route.extend({
         // temperature data (previous)
         if(weatherData[level][0][selectedMonth])
           data[0][0] = weatherData[level][0][selectedMonth];
+        else
+          data[0][0] = [];
 
         // temperature data (current)
         if(weatherData[level][1][selectedMonth])
           data[1][0] = weatherData[level][1][selectedMonth];
+        else
+          data[1][0] = [];
 
         // meter data (previous)
         if(meterIntervalData[level][0][selectedMonth])
           data[2][0] = meterIntervalData[level][0][selectedMonth];
+        else
+          data[2][0] = [];
 
         // meter data (current)
         if(meterIntervalData[level][1][selectedMonth])
           data[3][0] = meterIntervalData[level][1][selectedMonth];
+        else
+          data[3][0] = [];
       }
       else
       {
@@ -562,18 +570,26 @@ export default Route.extend({
         // temperature data (previous)
         if(weatherData[level][0][selectedMonth] && weatherData[level][0][selectedMonth][selectedDay])
           data[0][0] = weatherData[level][0][selectedMonth][selectedDay];
+        else
+          data[0][0] = [];
 
         // temperature data (current)
         if(weatherData[level][1][selectedMonth] && weatherData[level][1][selectedMonth][selectedDay])
           data[1][0] = weatherData[level][1][selectedMonth][selectedDay];
+        else
+          data[1][0] = [];
 
         // meter data (previous)
         if(meterIntervalData[level][0][selectedMonth] && meterIntervalData[level][0][selectedMonth][selectedDay])
           data[2][0] = meterIntervalData[level][0][selectedMonth][selectedDay];
+        else
+          data[2][0] = [];
 
         // meter data (current)
         if(meterIntervalData[level][1][selectedMonth] && meterIntervalData[level][1][selectedMonth][selectedDay])
           data[3][0] = meterIntervalData[level][1][selectedMonth][selectedDay];
+        else
+          data[3][0] = [];
       }
 
       trimData(data[0], 0, 100);
