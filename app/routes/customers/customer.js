@@ -30,16 +30,14 @@ export default Route.extend({
           meterOptions.push(locationOption);
           location.get("meterLocations").then(meterLocations => {
             meterLocations.forEach((meterLocation, currentMeterLocation) => {
-              if(meterLocation.active)
-              {
-                meterLocation.get("meter").then(meter => {
-                  locationOption.options.push({value: meter.id, text: `${meter.id} - ${meter.serviceType}`})
-                  if((currentCustomerLocation == (customerLocations.length - 1)) && (currentMeterLocation == (meterLocations.length - 1)))
-                  {
-                    controller.set("meterOptions", meterOptions)
-                  }
-                })
-              }
+              let active = meterLocation.active;
+              meterLocation.get("meter").then(meter => {
+                locationOption.options.push({value: meter.id, text: `${meter.id} - ${meter.serviceType}`, disabled: !active})
+                if((currentCustomerLocation == (customerLocations.length - 1)) && (currentMeterLocation == (meterLocations.length - 1)))
+                {
+                  controller.set("meterOptions", meterOptions)
+                }
+              })
             })
           })
         })
