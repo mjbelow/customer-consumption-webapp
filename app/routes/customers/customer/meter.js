@@ -488,7 +488,7 @@ export default Route.extend({
       {
         if(levelIncreased)
         {
-          selectedMonth = idx;
+          selectedMonth = idx + chartIndex[level - 1];
         }
         chartData.labels = labels[level][selectedMonth];
       }
@@ -496,7 +496,7 @@ export default Route.extend({
       {
         if(level === 2 && levelIncreased)
         {
-          selectedDay = idx;
+          selectedDay = idx + chartIndex[level - 1];
         }
         chartData.labels = labels[level];
       }
