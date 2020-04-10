@@ -7,3 +7,12 @@
 <div id="chart_container">
   {{ember-chart type="bar" data=chartData options=chartOptions}}
 </div>
+
+{{#if true}}
+  <p id="nav_buttons">
+    {{mdc-button style="raised" disabled=navDisabled click=(action "changeIndex" -500) leadingIcon="first_page"}}
+    {{mdc-button style="raised" disabled=navDisabled click=(action "changeIndex" -1) leadingIcon="chevron_left"}}
+    {{mdc-button style="raised" disabled=navDisabled click=(action "changeIndex" 1) trailingIcon="chevron_right"}}
+    {{mdc-button style="raised" disabled=navDisabled click=(action "changeIndex" 500) trailingIcon="last_page"}}
+  </p>
+{{/if}}

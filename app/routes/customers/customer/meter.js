@@ -160,8 +160,22 @@ export default Route.extend({
     controller.set("dailyDisabled", true);
     controller.set("hourlyDisabled", true);
 
+    controller.set("navDisabled", true);
+
     controller.set("actions", {
-      updateChart: updateChart
+      updateChart: updateChart,
+      changeIndex: function(amount) {
+        let level = controller.get("level");
+        let chartIndex = controller.get("chartIndex");
+
+        chartIndex[level] = chartIndex[level] + amount;
+
+        chartIndex[level] = chartIndex[level] < 0 ? 0 : chartIndex[level];
+
+        controller.set("chartIndex", chartIndex);
+
+        updateChart(level);
+      }
     })
 
     controller.set("route", this);
@@ -430,6 +444,8 @@ export default Route.extend({
 
     function updateChart(currentLevel, idx, dataset)
     {
+      let chartIndex = controller.get("chartIndex");
+      let adjustedIndex = controller.get("adjustedIndex");
       let chartData = controller.get("chartData");
       let data = controller.get("data");
       let weatherData = controller.get("weatherData");
@@ -442,6 +458,8 @@ export default Route.extend({
       let selectedMonth = controller.get("selectedMonth");
       let selectedDay = controller.get("selectedDay");
       let labels = controller.get("labels");
+
+      let prevDataCount = controller.get("prevDataCount");
 
       level = currentLevel >= 2 ? 2 : currentLevel <= 0 ? 0 : currentLevel;
 
@@ -482,6 +500,9 @@ export default Route.extend({
         }
         chartData.labels = labels[level];
       }
+
+      if(levelIncreased)
+        chartIndex[level] = 0;
 
       // update chart with no data so transition to new data doesn't look strange (occurs when increasing the amount of labels)
       data[0][1].length = 0;
@@ -592,11 +613,34 @@ export default Route.extend({
           data[3][0] = [];
       }
 
+      let itemCount = chartData.labels.length;
+      
+      let maxIndex = itemCount - prevDataCount;
+      maxIndex = maxIndex < 0 ? 0 : maxIndex;
+      adjustedIndex = chartIndex[level] > maxIndex ? maxIndex : chartIndex[level];
+      chartIndex[level] = adjustedIndex;
+
+      if(itemCount <= prevDataCount)
+      {
+        controller.set("navDisabled", true);
+      }
+      else
+      {
+        for(let i = 0; i < 4; i++)
+        {
+          data[i][0] = data[i][0].slice(adjustedIndex, prevDataCount + adjustedIndex);
+        }
+        chartData.labels = chartData.labels.slice(adjustedIndex, prevDataCount + adjustedIndex);
+        controller.set("navDisabled", false);
+      }
+
       trimData(data[0], 0, 100);
       trimData(data[1], 0, 100);
       trimData(data[2]);
       trimData(data[3]);
 
+      controller.set("chartIndex", chartIndex);
+      controller.set("adjustedIndex", adjustedIndex);
       controller.set("chartData", chartData);
       controller.set("data", data);
       controller.set("weatherData", weatherData);
@@ -612,6 +656,42 @@ export default Route.extend({
       chartInstance.update();
     }
 
+    controller.set("prevDataCount", 36);
+    controller.set("chartIndex", [0, 0, 0]);
+    controller.set("adjustedIndex", 0);
+
+    function trimChart()
+    {
+      let dataCount;
+      let prevDataCount = controller.get("prevDataCount");
+
+
+      if(window.innerWidth > 1890)
+        dataCount = 36;
+      else if(window.innerWidth > 1620)
+        dataCount = 30;
+      else if(window.innerWidth > 1350)
+        dataCount = 24;
+      else if(window.innerWidth > 1080)
+        dataCount = 18;
+      else if(window.innerWidth > 810)
+        dataCount = 12;
+      else if(window.innerWidth > 540)
+        dataCount = 6;
+      else
+        dataCount = 3;
+
+      
+      if(dataCount != prevDataCount) {
+        prevDataCount = dataCount;
+        controller.set("prevDataCount", prevDataCount);
+
+        updateChart(controller.get("level"));
+      }
+
+
+    }
+
     controller.set("chartOptions", {
       title: {
         display: true,
@@ -624,12 +704,16 @@ export default Route.extend({
           if(controller.get("chartInstance") === undefined) {
             controller.set("chartInstance", this);
             controller.set("monthlyDisabled", false);
+
+            trimChart();
           }
         },
         onComplete: function() {
           if(controller.get("chartInstance") === undefined) {
             controller.set("chartInstance", this);
             controller.set("monthlyDisabled", false);
+
+            trimChart();
           }
         }
       },
@@ -734,7 +818,8 @@ export default Route.extend({
 
         }
 
-      }
+      },
+      onResize: trimChart
     });
 
   }
