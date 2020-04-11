@@ -8,7 +8,7 @@ export default Route.extend({
     this.set('params',params);
 
     // current day
-    let currentDay = new Date("12/23/2019");
+    let currentDay = new Date("2/23/2020");
     currentDay.setHours(0,0,0,0);
     
     // next day
@@ -78,12 +78,23 @@ export default Route.extend({
       return ((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0);
     }
 
+    let currentYears = new Array(monthCount);
+    let previousYears = new Array(monthCount);
+
     for(let i = 0; i < monthCount; i++)
     {
       // generate month labels
       labels[0].push(months[(currentMonthUTC.getUTCMonth() + i) % 12]);
       
       let monthRange;
+
+      let currentMonthYear = new Date(currentMonthUTC);
+      currentMonthYear.setUTCMonth(currentMonthYear.getUTCMonth() + i);
+      let previousMonthYear = new Date(currentMonthPreviousUTC);
+      previousMonthYear.setUTCMonth(previousMonthYear.getUTCMonth() + i);
+
+      currentYears[i] = currentMonthYear.getUTCFullYear();
+      previousYears[i] = previousMonthYear.getUTCFullYear();
 
       // use current year if it's a leap year, else use previous year (whether it's a leap year or not)
       if(leapYear(currentMonthUTC.getUTCFullYear()))
@@ -95,8 +106,8 @@ export default Route.extend({
         monthRange = [new Date(currentMonthPreviousUTC), new Date(currentMonthPreviousUTC)];
       }
 
+      monthRange[1].setUTCMonth(monthRange[0].getUTCMonth() + i + 1);
       monthRange[0].setUTCMonth(monthRange[0].getUTCMonth() + i);
-      monthRange[1].setUTCMonth(monthRange[0].getUTCMonth() + 1);
       
       labels[1][i] = [];
       
@@ -105,13 +116,26 @@ export default Route.extend({
       {
         labels[1][i].push(`${monthRange[0].getUTCMonth()+1} / ${monthRange[0].getUTCDate()}`);
         
-        monthRange[0].setDate(monthRange[0].getUTCDate() + 1);
+        monthRange[0].setUTCDate(monthRange[0].getUTCDate() + 1);
       }
     }
 
     this.set('labels',labels);
-    this.set('currentYear',currentMonth.getUTCFullYear());
-    this.set('previousYear',currentMonthPrevious.getUTCFullYear());
+    this.set('currentYears', currentYears);
+    this.set('previousYears', previousYears);
+
+    function getYearRange(years)
+    {
+      let last = monthCount - 1;
+
+      if(years[0] === years[last])
+        return years[0];
+      
+      return `${years[0]} - ${years[last]}`;
+    }
+
+    this.set('currentYear', getYearRange(currentYears));
+    this.set('previousYear', getYearRange(previousYears));
 
     return hash({
       meter: this.store.findRecord('meter', params.meterId),
@@ -247,6 +271,8 @@ export default Route.extend({
         let dayPhase = 0;
 
         let prevMonthOffset = prevMonth.getUTCMonth() - baseMonth;
+        prevMonthOffset = prevMonthOffset < 0 ? prevMonthOffset + 12 : prevMonthOffset;
+
         let prevDayOffset = prevDay.getUTCDate() - 1;
   
         // daily data
@@ -267,6 +293,8 @@ export default Route.extend({
           currentMonth.setUTCDate(1);
 
           let currentMonthOffset = currentMonth.getUTCMonth() - baseMonth;
+          currentMonthOffset = currentMonthOffset < 0 ? currentMonthOffset + 12 : currentMonthOffset;
+
           let currentDayOffset = currentDay.getUTCDate() - 1;
           
           let last = model.lastObject.get("id") == data.get("id");
@@ -535,6 +563,22 @@ export default Route.extend({
         // show selected dataset (if hidden)
         chartInstance.getDatasetMeta(dataset - 2).hidden = false;
         chartInstance.getDatasetMeta(dataset).hidden = false;
+      }
+
+      // if data spans across a year (december - january), update chart legend to reflect current data's year when going down the intervals
+      if(level === 0)
+      {
+        chartData.datasets[0].label = `Temperature (${controller.get('route').get('previousYear')})`;
+        chartData.datasets[1].label = `Temperature (${controller.get('route').get('currentYear')})`;
+        chartData.datasets[2].label = `${model.meter.serviceType} (${controller.get('route').get('previousYear')})`;
+        chartData.datasets[3].label = `${model.meter.serviceType} (${controller.get('route').get('currentYear')})`;
+      }
+      else
+      {
+        chartData.datasets[0].label = `Temperature (${controller.get('route').get('previousYears')[selectedMonth]})`;
+        chartData.datasets[1].label = `Temperature (${controller.get('route').get('currentYears')[selectedMonth]})`;
+        chartData.datasets[2].label = `${model.meter.serviceType} (${controller.get('route').get('previousYears')[selectedMonth]})`;
+        chartData.datasets[3].label = `${model.meter.serviceType} (${controller.get('route').get('currentYears')[selectedMonth]})`;
       }
 
       chartInstance.update();
