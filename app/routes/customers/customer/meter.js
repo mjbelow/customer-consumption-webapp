@@ -8,7 +8,7 @@ export default Route.extend({
     this.set('params',params);
 
     // current day
-    let currentDay = new Date("2/23/2020");
+    let currentDay = new Date(params.year, params.month - 1, 1);
     currentDay.setHours(0,0,0,0);
     
     // next day

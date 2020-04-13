@@ -16,27 +16,46 @@
     </div>
   {{/mdc-card}}
 
-  {{mdc-select meterOptions style="outlined" label="Meters" value=meter didChange=(action "changeMeter")}}
+  {{mdc-select meterOptions style="outlined" label="Meter" value=meter didChange=(action "change" "meter")}}
+
+  <br>
+  <br>
+
+  {{mdc-select yearOptions style="outlined" label="Year" value=year didChange=(action "change" "year")}}
+  {{mdc-select monthOptions style="outlined" label="Month" value=month didChange=(action "change" "month")}}
+
+  <br>
+  <br>
 
   {{#mdc-button click=(action (mut meters) true) style="outlined"}}
-    {{#mdc-button-label}}Meters{{/mdc-button-label}}
+    {{#mdc-button-label}}
+      {{#if meter}}
+        {{meter}}
+      {{else}}
+        Meter
+      {{/if}}
+    {{/mdc-button-label}}
     {{mdc-button-icon "arrow_drop_down"}}
   {{/mdc-button}}
 
-  {{#mdc-menu open=meters anchorCorner="bottomLeft"}}
+  {{#mdc-menu open=meters anchorCorner="bottomLeft" didSelect=(action "change" "meter2")}}
     {{#mdc-menu-list}}
       {{#each model.customerLocations as |locations|}}
-        {{#mdc-menu-item class="location"}}
+        {{#mdc-menu-item class="location" disabled=true}}
           {{#mdc-menu-item-text}}{{locations.location.address}}{{/mdc-menu-item-text}}
         {{/mdc-menu-item}}
         {{#each locations.location.meterLocations as |meterLocations|}}
           {{!-- only show meters that are active --}}
           {{#if meterLocations.active}}
-            {{#mdc-menu-item-link-to "customers.customer.meter" meterLocations.meter.id}}
+            {{#mdc-menu-item}}
               {{#mdc-menu-item-text}}{{meterLocations.meter.id}} - {{meterLocations.meter.serviceType}}{{/mdc-menu-item-text}}
-            {{/mdc-menu-item-link-to}}
-            {{mdc-list-divider}}
+            {{/mdc-menu-item}}
+          {{else}}
+            {{#mdc-menu-item disabled=true}}
+              {{#mdc-menu-item-text}}{{meterLocations.meter.id}} - {{meterLocations.meter.serviceType}}{{/mdc-menu-item-text}}
+            {{/mdc-menu-item}}
           {{/if}}
+          {{mdc-list-divider}}
         {{/each}}
       {{/each}}
     {{/mdc-menu-list}}
