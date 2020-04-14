@@ -11,10 +11,6 @@ export default Route.extend({
     let currentDay = new Date(params.year, params.month - 1, 1);
     currentDay.setHours(0,0,0,0);
     
-    // next day
-    let nextDay = new Date(currentDay);
-    nextDay.setDate(nextDay.getDate() + 1);
-    
     let monthCount = 3;
 
     // current month
@@ -45,7 +41,6 @@ export default Route.extend({
     let nextMonthPrevious = new Date(currentMonthPrevious);
     nextMonthPrevious.setMonth(nextMonthPrevious.getMonth() + monthCount);
 
-    let dayRange = `ge:${currentDay.toLocaleDateString()},lt:${nextDay.toLocaleDateString()}`;
     let monthRange = `ge:${currentMonth.toLocaleDateString()},lt:${nextMonth.toLocaleDateString()}`;
     let monthRangePrevious = `ge:${currentMonthPrevious.toLocaleDateString()},lt:${nextMonthPrevious.toLocaleDateString()}`;
 
@@ -143,7 +138,8 @@ export default Route.extend({
         filter: {
           "meter.id": params.meterId,
           readdatetime: monthRange,
-          channelId: 1
+          channelId: 1,
+          read30min: 0
         },
         sort: "readdatetime"
       }),
@@ -151,7 +147,8 @@ export default Route.extend({
         filter: {
           "meter.id": params.meterId,
           readdatetime: monthRangePrevious,
-          channelId: 1
+          channelId: 1,
+          read30min: 0
         },
         sort: "readdatetime"
       }),
@@ -265,10 +262,6 @@ export default Route.extend({
         // set prevMonth to first day of month
         let prevMonth = new Date(prevDay)
         prevMonth.setUTCDate(1);
-  
-        // initialize month and day phase
-        let monthPhase = 0;
-        let dayPhase = 0;
 
         let prevMonthOffset = prevMonth.getUTCMonth() - baseMonth;
         prevMonthOffset = prevMonthOffset < 0 ? prevMonthOffset + 12 : prevMonthOffset;
@@ -360,10 +353,6 @@ export default Route.extend({
             // monthly data
             dataArray[0][dataset][currentMonthOffset] = aggregateFunction(dataArray[1][dataset][currentMonthOffset]);
   
-            console.log(dataArray[0][dataset])
-            console.log(dataArray[1][dataset])
-            console.log(dataArray[2][dataset])
-  
           }
           
         });
@@ -388,16 +377,6 @@ export default Route.extend({
       {
         arr[1][i] = (typeof min !== 'undefined') && (arr[0][i] < min) ? min : (typeof max !== 'undefined') && (arr[0][i] > max) ? max : arr[0][i];
       }
-    }
-
-    function getData(min, max, count, arr) {
-      arr.length = 0;
-      let i;
-      for(i = 0; i < count; i++)
-      {
-        arr.push((Math.random()*(max-min))+min);
-      }
-      return arr;
     }
 
     controller.set("data", [
@@ -492,7 +471,7 @@ export default Route.extend({
       level = currentLevel >= 2 ? 2 : currentLevel <= 0 ? 0 : currentLevel;
 
       // update selectedMonth or selectedDay if level increases
-      // but don't update if level decreases (not yet implemented)
+      // but don't update if level decreases
       let levelIncreased = prevLevel < level;
       prevLevel = level;
 
@@ -700,7 +679,7 @@ export default Route.extend({
       chartInstance.update();
     }
 
-    controller.set("prevDataCount", 36);
+    controller.set("prevDataCount", 0);
     controller.set("chartIndex", [0, 0, 0]);
     controller.set("adjustedIndex", 0);
 
@@ -846,7 +825,7 @@ export default Route.extend({
       onClick: function(e) {
         var activePoints = this.getElementAtEvent(e);
         if(activePoints[0]) {
-          var chartData = activePoints[0]['_chart'].config.data;
+          // var chartData = activePoints[0]['_chart'].config.data;
           var idx = activePoints[0]['_index'];
   
           let dataset = activePoints[0]['_datasetIndex'];
