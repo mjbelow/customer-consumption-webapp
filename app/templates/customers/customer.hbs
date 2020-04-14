@@ -1,6 +1,6 @@
 <div id="options_container">
 
-  {{#mdc-card class="standard"}}
+  <MdcCard @class="standard">
     <div class="content">
       {{model.name}}
 
@@ -14,52 +14,51 @@
         {{/each}}
       </div>
     </div>
-  {{/mdc-card}}
+  </MdcCard>
 
-  {{mdc-select meterOptions style="outlined" label="Meter" value=meter didChange=(action "change" "meter")}}
-
-  <br>
-  <br>
-
-  {{mdc-select yearOptions style="outlined" label="Year" value=year didChange=(action "change" "year")}}
-  {{mdc-select monthOptions style="outlined" label="Month" value=month didChange=(action "change" "month")}}
+  <MdcSelect @options={{meterOptions}} @style="outlined" @label="Meter" @value={{meter}} @didChange={{action "change" "meter"}} />
 
   <br>
   <br>
 
-  {{#mdc-button click=(action (mut meters) true) style="outlined"}}
-    {{#mdc-button-label}}
+  <MdcSelect @options={{yearOptions}} @style="outlined" @label="Year" @value={{year}} @didChange={{action "change" "year"}} />
+  <MdcSelect @options={{monthOptions}} @style="outlined" @label="Month" @value={{month}} @didChange={{action "change" "month"}} />
+
+  <br>
+  <br>
+
+  <MdcButton @click={{action (mut meters) true}} @style="outlined">
+    <MdcButtonLabel>
       {{#if meter}}
         {{meter}}
       {{else}}
         Meter
       {{/if}}
-    {{/mdc-button-label}}
-    {{mdc-button-icon "arrow_drop_down"}}
-  {{/mdc-button}}
+    </MdcButtonLabel>
+    <MdcButtonIcon @icon="arrow_drop_down" />
+  </MdcButton>
 
-  {{#mdc-menu open=meters anchorCorner="bottomLeft" didSelect=(action "change" "meter2")}}
-    {{#mdc-menu-list}}
+  <MdcMenu @open={{meters}} @anchorCorner="bottomLeft" @didSelect={{action "change" "meter2"}}>
+    <MdcMenuList>
       {{#each model.customerLocations as |locations|}}
-        {{#mdc-menu-item class="location" disabled=true}}
-          {{#mdc-menu-item-text}}{{locations.location.address}}{{/mdc-menu-item-text}}
-        {{/mdc-menu-item}}
+        <MdcMenuItem @class="location" @disabled=true>
+          <MdcMenuItemText>{{locations.location.address}}</MdcMenuItemText>
+        </MdcMenuItem>
         {{#each locations.location.meterLocations as |meterLocations|}}
-          {{!-- only show meters that are active --}}
           {{#if meterLocations.active}}
-            {{#mdc-menu-item}}
-              {{#mdc-menu-item-text}}{{meterLocations.meter.id}} - {{meterLocations.meter.serviceType}}{{/mdc-menu-item-text}}
-            {{/mdc-menu-item}}
+            <MdcMenuItem>
+              <MdcMenuItemText>{{meterLocations.meter.id}} - {{meterLocations.meter.serviceType}}</MdcMenuItemText>
+            </MdcMenuItem>
           {{else}}
-            {{#mdc-menu-item disabled=true}}
-              {{#mdc-menu-item-text}}{{meterLocations.meter.id}} - {{meterLocations.meter.serviceType}}{{/mdc-menu-item-text}}
-            {{/mdc-menu-item}}
+            <MdcMenuItem @disabled=true>
+              <MdcMenuItemText>{{meterLocations.meter.id}} - {{meterLocations.meter.serviceType}}</MdcMenuItemText>
+            </MdcMenuItem>
           {{/if}}
           {{mdc-list-divider}}
         {{/each}}
       {{/each}}
-    {{/mdc-menu-list}}
-  {{/mdc-menu}}
+    </MdcMenuList>
+  </MdcMenu>
 
 </div>
 

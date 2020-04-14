@@ -1,7 +1,7 @@
-{{#mdc-list}}
+<MdcList>
   {{#each model as |customer|}}
-    {{#mdc-list-item-link-to "customers.customer" customer.id trailingIcon="arrow_forward"}}
-      {{customer.name}}{{mdc-list-item-meta-icon "arrow_forward"}}
-    {{/mdc-list-item-link-to}}
+    <MdcListItemLinkTo @route="customers.customer" @model={{customer.id}}  @trailingIcon="arrow_forward">
+      {{customer.name}}<MdcListItemMetaIcon @icon="arrow_forward" />
+    </MdcListItemLinkTo>
   {{/each}}
-{{/mdc-list}}
+</MdcList>

@@ -1,18 +1,18 @@
 <p>
-  {{mdc-button style="raised" disabled=monthlyDisabled click=(action "updateChart" 0) label="Monthly"}}
-  {{mdc-button style="raised" disabled=dailyDisabled click=(action "updateChart" 1) label="Daily"}}
-  {{mdc-button style="raised" disabled=hourlyDisabled click=(action "updateChart" 2) label="Hourly"}}
+  <MdcButton @style="raised" @disabled={{monthlyDisabled}} @click={{action "updateChart" 0}} @label="Monthly" />
+  <MdcButton @style="raised" @disabled={{dailyDisabled}} @click={{action "updateChart" 1}} @label="Daily" />
+  <MdcButton @style="raised" @disabled={{hourlyDisabled}} @click={{action "updateChart" 2}} @label="Hourly" />
 </p>
 
 <div id="chart_container">
-  {{ember-chart type="bar" data=chartData options=chartOptions}}
+  <EmberChart @type="bar" @data={{chartData}} @options={{chartOptions}} />
 </div>
 
 {{#if true}}
   <p id="nav_buttons">
-    {{mdc-button style="raised" disabled=navDisabled click=(action "changeIndex" -500) leadingIcon="first_page"}}
-    {{mdc-button style="raised" disabled=navDisabled click=(action "changeIndex" -1) leadingIcon="chevron_left"}}
-    {{mdc-button style="raised" disabled=navDisabled click=(action "changeIndex" 1) trailingIcon="chevron_right"}}
-    {{mdc-button style="raised" disabled=navDisabled click=(action "changeIndex" 500) trailingIcon="last_page"}}
+    <MdcButton @style="raised" @disabled={{navDisabled}} @click={{action "changeIndex" -500}} @leadingIcon="first_page" />
+    <MdcButton @style="raised" @disabled={{navDisabled}} @click={{action "changeIndex" -1}} @leadingIcon="chevron_left" />
+    <MdcButton @style="raised" @disabled={{navDisabled}} @click={{action "changeIndex" 1}} @trailingIcon="chevron_right" />
+    <MdcButton @style="raised" @disabled={{navDisabled}} @click={{action "changeIndex" 500}} @trailingIcon="last_page" />
   </p>
 {{/if}}
