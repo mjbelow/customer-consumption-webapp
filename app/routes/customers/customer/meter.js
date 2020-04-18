@@ -412,7 +412,7 @@ export default Route.extend({
         pointRadius: 5,
         pointHitRadius: 5,
         pointHoverRadius: 5,
-        spanGaps: true
+        spanGaps: false
       },{
         yAxisID: 'temperature',
         label: `Temperature (${this.get('currentYear')})`,
@@ -427,7 +427,7 @@ export default Route.extend({
         pointRadius: 5,
         pointHitRadius: 5,
         pointHoverRadius: 5,
-        spanGaps: true
+        spanGaps: false
       },{
         yAxisID: 'meter',
         label: `${model.meter.serviceType} (${this.get('previousYear')})`,
