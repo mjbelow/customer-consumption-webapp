@@ -92,7 +92,7 @@ export default Route.extend({
       previousYears[i] = previousMonthYear.getUTCFullYear();
 
       // use current year if it's a leap year, else use previous year (whether it's a leap year or not)
-      if(leapYear(currentMonthUTC.getUTCFullYear()))
+      if(leapYear(currentYears[i]))
       {
         monthRange = [new Date(currentMonthUTC), new Date(currentMonthUTC)];
       }
