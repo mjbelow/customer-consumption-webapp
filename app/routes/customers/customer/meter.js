@@ -216,7 +216,15 @@ export default Route.extend({
       let sum = arrSum(arr);
       if(sum === null)
         return null;
-      return sum / arr.length;
+      let dataCount = 0;
+      let length = arr.length;
+      let i;
+      for(i = 0; i < length; i++)
+      {
+        if(arr[i] != null)
+          dataCount++;
+      }
+      return sum / dataCount;
     }
 
     // get temperature data
