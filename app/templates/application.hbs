@@ -1,22 +1,22 @@
-{{#mdc-top-app-bar style="fixed"}}
-  {{#mdc-top-app-bar-row}}
+<MdcTopAppBar @style="fixed">
+  <MdcTopAppBarRow>
   
-    {{#mdc-top-app-bar-section}}
-      {{#mdc-top-app-bar-title}}KUB{{/mdc-top-app-bar-title}}
-    {{/mdc-top-app-bar-section}}
+    <MdcTopAppBarSection>
+      <MdcTopAppBarTitle>KUB</MdcTopAppBarTitle>
+    </MdcTopAppBarSection>
 
-    {{#mdc-top-app-bar-section position="alignEnd" role="toolbar"}}
-      {{#link-to "customers"}}
-        {{mdc-top-app-bar-action-item label="Customers" alt="Customers" icon="person"}}
-      {{/link-to}}
-      {{#link-to "demo"}}
-        {{mdc-top-app-bar-action-item label="Data" alt="Data" icon="folder_open"}}
-      {{/link-to}}
-    {{/mdc-top-app-bar-section}}
+    <MdcTopAppBarSection @position="alignEnd" @role="toolbar">
+      <LinkTo @route="customers">
+        <MdcTopAppBarActionItem @label="Customers" @alt="Customers" @icon="person" />
+      </LinkTo>
+      <LinkTo @route="demo">
+        <MdcTopAppBarActionItem @label="Data" @alt="Data" @icon="folder_open" />
+      </LinkTo>
+    </MdcTopAppBarSection>
 
-  {{/mdc-top-app-bar-row}}
-{{/mdc-top-app-bar}}
+  </MdcTopAppBarRow>
+</MdcTopAppBar>
 
-{{#mdc-content}}
+<MdcContent>
   {{outlet}}
-{{/mdc-content}}
+</MdcContent>

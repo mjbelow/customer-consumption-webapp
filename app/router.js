@@ -13,7 +13,7 @@ Router.map(function() {
   });
   this.route('customers', function() {
     this.route('customer', {path: '/:id'}, function() {
-      this.route('meter', {path: '/:meterId'});
+      this.route('meter', {path: '/:meterId/:year/:month'});
     });
   });
 });
